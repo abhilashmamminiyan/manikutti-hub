@@ -1,0 +1,6 @@
+[submodule "Manikutti"]
+	path = Manikutti
+	url = https://github.com/abhilashmamminiyan/Manikutti.git
+[submodule "manikutti_mobile"]
+	path = manikutti_mobile
+	url = https://github.com/abhilashmamminiyan/manikutti_mobile.git
