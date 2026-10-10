@@ -92,8 +92,17 @@ The prompt instructs Gemini to act as **"മണിക്കുട്ടി ഫ�
 
 ---
 
-## 5. Future Possible Upgrades
+## 5. Release & Deployment Details
+
+- **Backend Production Deployment**: Merged to `main` via PR #9 and PR #10, deployed to Vercel production.
+- **Mobile Release**: Version `2.2.0` (Build `45`), deployed to Firebase App Distribution via PR #29.
+- **CI Submodule Sync Fix**: Resolved merge conflict failure in `.github/workflows/sync-parent.yml` across both `manikutti_mobile` (PR #30) and `Manikutti` (PR #10) by changing `git submodule update --remote --merge` to `git submodule update --init --remote`.
+
+---
+
+## 6. Future Possible Upgrades
 
 - **Conversational Financial Chat**: Interactive chat interface where family members can ask questions (e.g. *"ഈ മാസം എനിക്ക് എത്ര രൂപ ലാഭിക്കാൻ പറ്റി?"*).
 - **Predictive Month-End Run Rate**: Estimate month-end total spending based on day-of-month velocity.
 - **Audio Voice Readout (TTS)**: Allow the advisor to read out advice aloud in Malayalam using Text-to-Speech for elderly family members.
+
