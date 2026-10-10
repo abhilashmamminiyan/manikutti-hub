@@ -19,8 +19,13 @@ The Personal Finance Ledger enables individual users to record, categorize, insp
 - API Route:
   - `src/app/api/sheets/expense/route.ts`: GET, POST, PUT, DELETE for personal transactions.
 
-### Mobile Client (`manikutti_mobile`)
-- [`lib/screens/dashboard_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/dashboard_screen.dart): Mobile main ledger view with monthly totals, category cards, AI advisor card, and quick transaction list.
+- [`lib/screens/dashboard_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/dashboard_screen.dart): Mobile main ledger view with monthly totals, category cards, AI advisor card, and quick transaction list limited to latest 5 items of current calendar month with "See All" action.
+- [`lib/screens/transactions_log_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/transactions_log_screen.dart): Dedicated transactions log screen with:
+  - Date filtering (`This Month`, `Last Month`, `All Time`, `Custom Range` with DateRangePicker).
+  - Amount ordering (Amount High to Low, Low to High) and date sorting (Newest first, Oldest first).
+  - Type filters (`All`, `Personal`, `Family`).
+  - Search by note, category, or type.
+  - Filtered inflow/outflow summary cards and pull-to-refresh synchronization.
 - [`lib/screens/add_transaction_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/add_transaction_screen.dart): Form to input amount, category, date, notes, and toggle Personal vs. Family.
 - [`lib/models/transaction_model.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/models/transaction_model.dart): Dart representation of transactions.
 - [`lib/database/db_helper.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/database/db_helper.dart): SQLite CRUD methods for table `transactions`.
@@ -73,6 +78,8 @@ The Personal Finance Ledger enables individual users to record, categorize, insp
 - **Zero or Negative Amounts**: Rejected at form level and API level. Amounts must be `> 0`.
 - **UTC Date Invariance**: Dates must be stored in UTC format. Display layers convert to device timezone.
 - **Empty Category**: Defaults to `"Other"` if omitted.
+- **Calendar Month Dashboard Reset**: The mobile dashboard metrics (`Income`, `Spent`, `Family Spent`, `Net Available Balance`) dynamically calculate over the current calendar month (`tDate.year == now.year && tDate.month == now.month`). When a new calendar month starts (e.g. October), metrics reset automatically for the new month while historical transactions remain accessible via `TransactionsLogScreen`.
+- **Dashboard Quick Log Limit**: Dashboard transactions log is strictly capped to the latest 5 transactions of the current calendar month. Older records are browsable on the dedicated Transactions Log screen.
 - **Dynamic Sheet Creation**: If a new user logs in and doesn't have a personal spreadsheet, `GoogleSheetsService` automatically creates the sheet under the Service Account and shares it with the user's email.
 
 ---

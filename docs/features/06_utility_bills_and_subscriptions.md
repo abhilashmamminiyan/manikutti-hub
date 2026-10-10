@@ -35,7 +35,8 @@ The Utility Bills and Subscriptions module tracks recurring domestic expenditure
    - When the user taps "Mark as Paid", the status transitions to `Paid` with timestamp `LastPaidDate`.
    - If `AutoLogExpense` is true, the system automatically posts a corresponding entry to `Personal_Expenses` or `Family_Expenses` under the "Utilities" category.
 3. **Monthly Reset**:
-   - At the beginning of a new calendar month, recurring bills reset their `isPaid` status to `false` based on comparison with the current month/year.
+   - At the beginning of a new calendar month, recurring commitments in `Monthly_Expenses` reset their status to `Unpaid` based on calendar comparison of `LastPaidDate` with the current month and year (`isPaidThisMonth`).
+   - Both the Next.js API endpoints (`/api/sheets/monthly`, `/api/sheets/admin/stats`) and Flutter mobile app (`DashboardScreen`) dynamically enforce this reset, ensuring paid statuses from previous months (e.g. July) do not persist into new months (e.g. October).
 
 ---
 
