@@ -34,6 +34,16 @@ This is a parent workspace linking the two components as submodules:
 
 ---
 
+## 📖 Architecture & Feature Documentation
+
+For developers and AI coding agents:
+*   🤖 **[AI System Map & Coding Agent Guide](AI_SYSTEM_MAP.md)** — Architectural index and mandatory rules for AI assistants.
+*   🗺️ **[Feature & Implementation File Matrix](docs/FEATURE_MAP.md)** — Comprehensive map of all features, files, APIs, and Google Sheets tables.
+*   🚀 **[Future Features & Upgrade Roadmap](docs/UPGRADE_ROADMAP.md)** — Catalog of planned upgrades and step-by-step implementation blueprints.
+*   📚 **[Modular Feature Specifications](docs/README.md)** — Deep architectural documentation for all 12 system features (`docs/features/`).
+
+---
+
 ## 🚀 Cloning the Workspace
 
 To check out the entire workspace along with both submodules, clone with the `--recurse-submodules` flag:
