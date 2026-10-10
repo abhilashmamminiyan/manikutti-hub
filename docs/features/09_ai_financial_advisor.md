@@ -87,15 +87,16 @@ The prompt instructs Gemini to act as **"മണിക്കുട്ടി ഫ�
 - **Privacy & PII Protection**: Never send personal names, emails, phone numbers, or account numbers to Gemini API. Only aggregated categories and numeric summaries are passed.
 - **15-Minute Rate Limiting & 15 RPM Protection**: Server-side cache avoids exceeding Gemini Free Tier quotas and prevents user spamming.
 - **HTTP 429 Graceful Fallback**: If rate limit is hit, gracefully delivers previous cache or friendly Malayalam alert without breaking the client UI.
-- **Missing API Key**: If `GEMINI_API_KEY` is not present in Vercel environment variables, the API returns a structured 500 error directing configuration.
+- **Missing API Key / Gemini Unavailability Graceful Fallback**: If `GEMINI_API_KEY` is not present or Gemini returns 429/400/500, the server automatically engages the built-in Intelligent Malayalam Advisor Engine. It analyzes the actual expenses, entertainment (theater/OTT) spending, and dining (Swiggy/Zomato) spending to provide structured, accurate Malayalam financial insights and savings tips without throwing errors.
 - **Empty Ledger**: When no expenses are recorded yet, returns a friendly Malayalam note encouraging the user to log their first expense.
 
 ---
 
 ## 5. Release & Deployment Details
 
-- **Backend Production Deployment**: Merged to `main` via PR #9 and PR #10, deployed to Vercel production.
-- **Mobile Release**: Version `2.2.0` (Build `45`), deployed to Firebase App Distribution via PR #29.
+- **Backend Production Deployment**: Merged to `main` via PR #9, PR #10, and PR #11, deployed to Vercel production.
+- **Mobile Release**: Version `2.2.1` (Build `46`), deployed to Firebase App Distribution via PR #31.
+- **Intelligent Fallback & Error Resilience**: Added dual-engine architecture (`gemini` + `rule-based`) ensuring users always receive tailored Malayalam advice. Mobile `api_service.dart` decodes server errors and provides clear diagnostics rather than dropping them.
 - **CI Submodule Sync Fix**: Resolved merge conflict failure in `.github/workflows/sync-parent.yml` across both `manikutti_mobile` (PR #30) and `Manikutti` (PR #10) by changing `git submodule update --remote --merge` to `git submodule update --init --remote`.
 
 ---
