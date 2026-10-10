@@ -21,4 +21,6 @@ Before and after modifying any code in this repository:
 ## 2. Git Workflow Rules
 1. **Feature Branches**: Always create a new branch for every new feature or distinct task rather than pushing directly to `main` or reusing old feature branches.
 2. **Pull Before Push**: Always pull the latest changes from the remote tracking branch before attempting to push, to avoid merge conflicts and rejected pushes.
+3. **Always Sync with Main Before Merging**: Always fetch and merge the latest commits from `origin/main` into your feature branch before raising, testing, or merging a pull request to ensure full integration and prevent stale preview deployment failures.
+
 
