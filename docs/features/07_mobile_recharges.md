@@ -52,6 +52,10 @@ In Indian households, family members frequently manage multiple prepaid mobile c
 - **Phone Number Format**: Validates standard 10-digit Indian mobile numbers (`^[6-9]\d{9}$`).
 - **Consecutive Recharges (Queueing)**: If recharged before the previous pack expired (e.g. Jio queued plans), the new validity date starts from the previous plan's end date rather than today.
 - **Negative Days Remaining**: Handled gracefully with an "Expired X days ago" indicator.
+- **Android 12+ Exact Alarms & Resilience**:
+  - `SCHEDULE_EXACT_ALARM`, `POST_NOTIFICATIONS`, `RECEIVE_BOOT_COMPLETED`, and `VIBRATE` declared in `AndroidManifest.xml`.
+  - `NotificationService._safeZonedSchedule` attempts `AndroidScheduleMode.exactAllowWhileIdle` and automatically falls back to `AndroidScheduleMode.inexactAllowWhileIdle` if exact alarms are not permitted on the device.
+  - Notification scheduling is wrapped in non-blocking execution so notification permission or OEM alarm restrictions never block local SQLite persistence or Cloud Google Sheets sync.
 
 ---
 
