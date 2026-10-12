@@ -41,6 +41,14 @@ The Loans and EMI Tracker gives families complete visibility into outstanding li
 2. **Prepayment Impact**:
    - Each lump-sum prepayment directly reduces principal outstanding $P_{\text{new}} = P_{\text{current}} - \text{Prepayment}$.
    - The user can choose to either reduce monthly EMI or reduce remaining tenure $n$.
+3. **Constant Family EMI Dues Aggregation**:
+   - The system computes the family's fixed, non-negotiable monthly EMI obligations by combining:
+     - All active loans from `Loans` (`status: Active`) summing `monthlyEMI`.
+     - Standalone recurring EMI commitments registered in `Monthly_Expenses` (e.g. store finances, unlinked vehicle loans), automatically deduplicated against active loans by name to prevent double-counting.
+   - **Dashboard Integration**:
+     - **Web Admin Dashboard** (`OverviewTab.tsx`): Prominently surfaced as a dedicated KPI card `Constant EMI Dues` with a `Fixed` badge.
+     - **Web Family Dashboard** (`FamilyDashboard.tsx`): Displayed as a primary overview metric alongside monthly spend.
+     - **Mobile Dashboard** (`dashboard_screen.dart`): Displayed directly in the `FAMILY LEDGER POOL` hero card as `Constant EMI` alongside pool outflow. Individual commitment items are badged with `EMI • FIXED` and dedicated wallet icons.
 
 ---
 
