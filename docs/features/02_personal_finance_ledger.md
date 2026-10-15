@@ -19,7 +19,7 @@ The Personal Finance Ledger enables individual users to record, categorize, insp
 - API Route:
   - `src/app/api/sheets/expense/route.ts`: GET, POST, PUT, DELETE for personal transactions.
 
-- [`lib/screens/dashboard_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/dashboard_screen.dart): Mobile main ledger view with monthly totals, category cards, AI advisor card, and quick transaction list limited to latest 5 items of current calendar month with "See All" action.
+- [`lib/screens/dashboard_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/dashboard_screen.dart): Mobile main ledger view with monthly totals, category cards, AI advisor card, quick transaction list limited to latest 5 items of current calendar month with "See All" action, and [`lib/widgets/sidebar_pulse_handle.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/widgets/sidebar_pulse_handle.dart) (floating left-edge handle with pulsing arrow and options icon to open the sidebar drawer).
 - [`lib/screens/transactions_log_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/transactions_log_screen.dart): Dedicated transactions log screen with:
   - Date filtering (`This Month`, `Last Month`, `All Time`, `Custom Range` with DateRangePicker).
   - Amount ordering (Amount High to Low, Low to High) and date sorting (Newest first, Oldest first).
