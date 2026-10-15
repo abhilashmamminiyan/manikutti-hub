@@ -49,8 +49,9 @@ flowchart TD
 
 ---
 
-### 2. 🎙️ Voice Expense Logging (Multilingual Malayalam & English)
-- **Description**: Allow family members (especially non-tech-savvy elders) to press a microphone button on the Flutter dashboard and speak naturally (e.g. *"ഇന്ന് മീൻ വാങ്ങാൻ 250 രൂപ ചെലവായി"* or *"Auto rickshaw 60 rupees"*).
+### 2. 🎙️ Voice Expense Logging (Multilingual Malayalam & English) (✅ Completed)
+- **Status**: Completed in Feature 14 (`docs/features/14_voice_logging_and_home_widget.md`).
+- **Description**: Allows family members to speak naturally in Manglish, Malayalam, or English (e.g. *"100 roopakku petrol adichu"*, *"ഇന്ന് മീൻ വാങ്ങാൻ 250 രൂപ"*), with instant Gemini AI entity extraction, offline regex fallback, Home Screen Widget sync, and Quick Settings tile integration.
 - **Mobile Components**:
   - `speech_to_text` Flutter package or record audio snippet via `record` package.
   - Floating Voice Mic button on `lib/screens/dashboard_screen.dart`.
