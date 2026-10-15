@@ -79,8 +79,9 @@ The Personal Finance Ledger enables individual users to record, categorize, insp
 - **Zero or Negative Amounts**: Rejected at form level and API level. Amounts must be `> 0`.
 - **UTC Date Invariance**: Dates must be stored in UTC format. Display layers convert to device timezone.
 - **Empty Category**: Defaults to `"Other"` if omitted.
-- **Calendar Month Dashboard Reset**: The mobile dashboard metrics (`Income`, `Spent`, `Family Spent`, `Net Available Balance`) dynamically calculate over the current calendar month (`tDate.year == now.year && tDate.month == now.month`). When a new calendar month starts (e.g. October), metrics reset automatically for the new month while historical transactions remain accessible via `TransactionsLogScreen`.
+- **Calendar Month Dashboard Metrics vs Live Bank Balance**: Personal monthly metrics (`Income`, `Spent`, `Family Spent`) dynamically calculate over the current calendar month (`tDate.year == now.year && tDate.month == now.month`) and reset on the 1st of each month. In contrast, **Available Balance** represents true cumulative liquid funds (`_sbiBalance + _canaraBalance`), computed continuously by `BankBalanceService` using verified statement baselines and post-statement transaction deltas.
 - **Dashboard Quick Log Limit**: Dashboard transactions log is strictly capped to the latest 5 transactions of the current calendar month. Older records are browsable on the dedicated Transactions Log screen.
+- **Automated Pull Request Scripting**: The ecosystem provides `scripts/automate_pr.ps1` and `scripts/automate_pr.sh` for automated test execution, sync with `origin/main`, CI pipeline observation, and squash-merging.
 - **Dynamic Sheet Creation**: If a new user logs in and doesn't have a personal spreadsheet, `GoogleSheetsService` automatically creates the sheet under the Service Account and shares it with the user's email.
 
 ---
