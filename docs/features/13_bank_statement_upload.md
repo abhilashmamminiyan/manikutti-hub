@@ -93,8 +93,10 @@ Indian banks (SBI, HDFC, ICICI, Axis, Canara, Federal, etc.) send monthly e-stat
 
 ## 6. Architectural Contracts Preserved
 1. **UTC Timestamps**: All saved transactions are normalized to ISO UTC strings (`.toUtc().toIso8601String()`).
-2. **Schema Invariance & Forward Compatibility**: Google Sheets `Personal_Expenses!A:H` schema now includes Bank Account (Column H), defaulting to `'SBI'` for all legacy rows.
+2. **Schema Invariance & Forward Compatibility**: Google Sheets `Personal_Expenses!A:H` schema includes Bank Account (Column H), defaulting to `'SBI'` for all legacy rows.
 3. **Offline Resilience**: Batch writes update local SQLite with `synced = 1` immediately, maintaining offline consistency.
 4. **Zero-Knowledge Privacy**: Bank statement passwords are processed strictly in local device RAM.
 5. **Multi-Bank Account Routing**: Transactions are assigned to the user-selected bank (`SBI` or `Canara Bank`), powering individual bank balances and overall totals on Dashboard.
+6. **Verified Closing Balance Persistence**: The closing balance extracted from the statement is displayed in a verified banner and saved to `BankBalanceService` as the verified baseline balance for that bank account.
+7. **Intra-Account Self-Transfer Invariance**: Statement transactions representing self-transfers between user's accounts are tagged with category `Transfer`, ensuring bank balance adjustments without distorting monthly personal expense or income figures.
 
