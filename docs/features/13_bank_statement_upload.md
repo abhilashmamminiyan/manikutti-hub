@@ -79,7 +79,19 @@ sequenceDiagram
 
 ---
 
-## 5. Architectural Contracts Preserved
+## 5. Password-Protected PDF Support & Zero-Knowledge Decryption
+Indian banks (SBI, HDFC, ICICI, Axis, Canara, Federal, etc.) send monthly e-statements as password-locked PDFs.
+- **Client-Side Detection**: When a user selects a statement PDF, `BankStatementScreen` detects whether it is password-protected using `syncfusion_flutter_pdf`.
+- **Zero-Knowledge Decryption**:
+  - Prompts the user with an interactive dialog displaying standard Indian bank password patterns (e.g. SBI name + mobile, HDFC customer ID, ICICI name + DOB).
+  - The document is decrypted and unlocked locally on the handset using `PdfLoadedDocument(bytes, password: password)` and removing security before transmission.
+  - **Privacy Guarantee**: The user's bank password **never leaves the device** and is never sent across the internet or stored in cloud logs.
+  - The clean unencrypted bytes are forwarded to `/api/statement/parse`, ensuring Gemini 2.5 Flash ingests the document without decryption barriers.
+
+---
+
+## 6. Architectural Contracts Preserved
 1. **UTC Timestamps**: All saved transactions are normalized to ISO UTC strings (`.toUtc().toIso8601String()`).
 2. **Schema Invariance**: Google Sheets `Personal_Expenses!A:G` schema is preserved without alteration.
 3. **Offline Resilience**: Batch writes update local SQLite with `synced = 1` immediately, maintaining offline consistency.
+4. **Zero-Knowledge Privacy**: Bank statement passwords are processed strictly in local device RAM.
