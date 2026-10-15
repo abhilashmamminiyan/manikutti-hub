@@ -74,7 +74,8 @@ docs/
     ├── 09_ai_financial_advisor.md            # Gemini 2.5 Flash Malayalam financial insights
     ├── 10_notifications_and_alerts.md        # Local notifications, background polling
     ├── 11_calculator_and_financial_tools.md  # In-app calculator, history, expense math
-    └── 12_internationalization_and_theming.md# Flutter l10n (EN/ML), Material 3 theming
+    ├── 12_internationalization_and_theming.md# Flutter l10n (EN/ML), Material 3 theming
+    └── 13_bank_statement_upload.md          # Multi-format bank statement parsing, zero-knowledge PDF decrypt, deduplication
 ```
 
 ---

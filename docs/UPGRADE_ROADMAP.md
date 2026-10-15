@@ -16,8 +16,8 @@ flowchart TD
     A --> D["Phase 3: Wealth & Settlements"]
 
     B --> B1["Android SMS / UPI Auto-Detection"]
-    B --> B2["Voice Expense Logging (Malayalam & English)"]
     B --> B3["Multimodal Receipt Scan (Gemini Vision)"]
+    B --> B4["Bank Statement Upload & Deduplication (✅ Completed)"]
 
     C --> C1["Predictive Cashflow & Budget Caps"]
     C --> C2["Proactive Anomaly Alerts (FCM Push)"]
