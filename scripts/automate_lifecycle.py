@@ -50,6 +50,13 @@ def api_request(url, method='GET', data=None, token=None):
         print(f"HTTP Error {e.code}: {error_msg}")
         raise
 
+if sys.platform == 'win32':
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+        sys.stderr.reconfigure(encoding='utf-8')
+    except Exception:
+        pass
+
 def main():
     parser = argparse.ArgumentParser(description="Automate PR creation, CI monitoring, and merge")
     parser.add_argument("--repo", default="abhilashmamminiyan/manikutti_mobile", help="Owner/repo slug")
@@ -63,7 +70,7 @@ def main():
     args = parser.parse_args()
 
     token = get_token()
-    print("Retrieved GitHub PAT successfully.")
+    print("[INFO] Retrieved GitHub PAT successfully.")
 
     repo = args.repo
     head = args.head
@@ -72,7 +79,7 @@ def main():
     body = args.body or f"Automated Pull Request for feature branch {head}."
 
     # 1. Check existing PR
-    print(f"Checking for existing open PR for {head} -> {base}...")
+    print(f"[INFO] Checking for existing open PR for {head} -> {base}...")
     existing_url = f"https://api.github.com/repos/{repo}/pulls?head={repo.split('/')[0]}:{head}&state=open"
     existing = api_request(existing_url, token=token)
 
@@ -81,9 +88,16 @@ def main():
     if existing:
         pr_number = existing[0]['number']
         pr_url = existing[0]['html_url']
-        print(f"Found existing PR #{pr_number}: {pr_url}")
+        print(f"[INFO] Found existing PR #{pr_number}: {pr_url}")
     else:
-        print(f"Creating new PR for {head} -> {base}...")
+        # Also check if already closed/merged
+        all_url = f"https://api.github.com/repos/{repo}/pulls?head={repo.split('/')[0]}:{head}&state=all"
+        all_prs = api_request(all_url, token=token)
+        if all_prs and all_prs[0].get('merged_at'):
+            print(f"[MERGED] PR #{all_prs[0]['number']} is already merged!")
+            return
+
+        print(f"[INFO] Creating new PR for {head} -> {base}...")
         create_url = f"https://api.github.com/repos/{repo}/pulls"
         pr_payload = {
             "title": title,
@@ -94,15 +108,28 @@ def main():
         res = api_request(create_url, method='POST', data=pr_payload, token=token)
         pr_number = res['number']
         pr_url = res['html_url']
-        print(f"Created PR #{pr_number}: {pr_url}")
+        print(f"[OK] Created PR #{pr_number}: {pr_url}")
+
+    # Check if PR was already merged immediately
+    pr_details_url = f"https://api.github.com/repos/{repo}/pulls/{pr_number}"
+    pr_details = api_request(pr_details_url, token=token)
+    if pr_details.get('merged'):
+        print(f"[MERGED] PR #{pr_number} is already MERGED!")
+        return
 
     # 2. Monitor GitHub Actions CI Runs
-    print(f"\nMonitoring GitHub Actions CI runs for PR #{pr_number}...")
-    max_wait = 600  # 10 minutes for build
+    print(f"\n[INFO] Monitoring GitHub Actions CI runs for PR #{pr_number}...")
+    max_wait = 600  # 10 minutes
     start_time = time.time()
     last_status = None
 
     while time.time() - start_time < max_wait:
+        # Check if PR has been merged by auto-merge action while waiting
+        pr_details = api_request(pr_details_url, token=token)
+        if pr_details.get('merged'):
+            print(f"[MERGED] PR #{pr_number} has been MERGED!")
+            return
+
         runs_url = f"https://api.github.com/repos/{repo}/actions/runs?branch={head}"
         try:
             runs_data = api_request(runs_url, token=token)
@@ -121,10 +148,10 @@ def main():
 
                 if status == 'completed':
                     if conclusion == 'success':
-                        print("✅ GitHub Actions CI Pipeline PASSED successfully!")
+                        print("[OK] GitHub Actions CI Pipeline PASSED successfully!")
                         break
                     else:
-                        print(f"❌ CI Pipeline finished with conclusion: {conclusion}")
+                        print(f"[FAILED] CI Pipeline finished with conclusion: {conclusion}")
                         # Fetch failed logs
                         logs_url = f"https://api.github.com/repos/{repo}/actions/runs/{run_id}/jobs"
                         jobs_data = api_request(logs_url, token=token)
@@ -133,7 +160,7 @@ def main():
                                 print(f"\nFailed Job: {job.get('name')} (Status: {job.get('conclusion')})")
                                 for step in job.get('steps', []):
                                     if step.get('conclusion') == 'failure':
-                                        print(f"  ❌ Failed Step: {step.get('name')}")
+                                        print(f"  [STEP FAILED] {step.get('name')}")
                         sys.exit(1)
         except Exception as e:
             print(f"Checking workflow run: {e}")
@@ -141,13 +168,12 @@ def main():
 
     # 3. Check PR Merge Status or Squash Merge
     if args.auto_merge:
-        print(f"\nChecking merge status of PR #{pr_number}...")
-        pr_details_url = f"https://api.github.com/repos/{repo}/pulls/{pr_number}"
+        print(f"\n[INFO] Checking merge status of PR #{pr_number}...")
         pr_details = api_request(pr_details_url, token=token)
         if pr_details.get('merged'):
-            print(f"✅ PR #{pr_number} is already MERGED!")
+            print(f"[MERGED] PR #{pr_number} is already MERGED!")
         else:
-            print(f"Attempting to squash merge PR #{pr_number}...")
+            print(f"[INFO] Attempting to squash merge PR #{pr_number}...")
             merge_url = f"https://api.github.com/repos/{repo}/pulls/{pr_number}/merge"
             merge_payload = {
                 "commit_title": f"{title} (#{pr_number})",
@@ -156,7 +182,7 @@ def main():
             try:
                 merge_res = api_request(merge_url, method='PUT', data=merge_payload, token=token)
                 if merge_res.get('merged'):
-                    print(f"🎉 PR #{pr_number} successfully MERGED into {base}!")
+                    print(f"[SUCCESS] PR #{pr_number} successfully MERGED into {base}!")
                 else:
                     print(f"Merge response: {merge_res}")
             except Exception as e:
