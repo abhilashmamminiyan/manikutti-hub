@@ -39,8 +39,11 @@ The Manikutti ecosystem provides secure, stateless authentication designed for p
    - For every protected API endpoint (`/api/sheets/*`, `/api/ai/*`), `getAuthUserEmail(request)` extracts either the NextAuth session or parses the bearer token.
    - If unauthorized, returns HTTP 401 `{ error: 'Unauthorized' }`.
 4. **App Lock Layer (Mobile)**:
-   - On app startup (`main.dart`), check `prefs.getBool('app_lock_enabled')`.
-   - If enabled, route directly to `AppLockScreen` before unlocking `DashboardScreen`.
+   - On app startup (`main.dart`), check `prefs.getBool('app_lock_enabled')` or `hasPin()`.
+   - **2-Minute Lock Grace Period**: When leaving the app (`paused`/`inactive`/`hidden`, e.g., opening a PDF viewer, file picker, or switching apps), the timestamp is persisted in `SharedPreferences` (`last_app_paused_epoch_ms`).
+   - If the user re-opens or returns to the app within 2 minutes (`< 120,000 ms`), authentication is skipped to avoid fingerprint/PIN prompt spam.
+   - If 2 minutes or more have elapsed, or on cold startup without a recent timestamp, `AppLockScreen` is presented.
+   - **Voice Dialog Overlay Exemption**: Floating voice dialog routes (`/voice-dialog`, `voiceDialogMain`) are strictly exempted from `AppLockScreen` to enable fast home screen voice logging.
 
 ---
 
@@ -50,6 +53,7 @@ The Manikutti ecosystem provides secure, stateless authentication designed for p
 - **OTP Expiration**: OTP codes expire strictly after 10 minutes.
 - **Offline Mobile Login**: If the mobile device is offline, existing saved session in `FlutterSecureStorage` permits dashboard entry. Re-authentication is only required upon explicit logout or token expiry.
 - **Biometric Availability**: `local_auth` handles fallback to device PIN if biometric hardware is not enrolled.
+- **Lock Grace Period Security**: If the app was already locked when backgrounded, the timestamp is not renewed, preventing lock bypass by toggling apps. Explicit logout via `clearSession()` immediately invalidates `last_app_paused_epoch_ms`.
 
 ---
 
