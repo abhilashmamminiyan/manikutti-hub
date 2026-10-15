@@ -16,7 +16,9 @@ The Loans and EMI Tracker gives families complete visibility into outstanding li
   - `/api/sheets/home-loan/route.ts`: Home Loan amortizations, disbursements, and prepayment ledger.
 
 ### Mobile Client (`manikutti_mobile`)
-- [`lib/screens/loans_emi_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/loans_emi_screen.dart): Mobile loans dashboard displaying active liabilities and monthly obligations.
+- [`lib/screens/dashboard_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/dashboard_screen.dart): Hosts the integrated Family Loans & EMI Ledger directly on the main dashboard screen.
+- [`lib/widgets/family_loan_emi_card.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/widgets/family_loan_emi_card.dart): Modern loan and EMI tracker widget displaying installment count progress bars, monthly payment amounts, principal paid, interest paid, and balance to be paid for both Home Loan and active consumer EMIs.
+- [`lib/screens/loans_emi_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/loans_emi_screen.dart): Dedicated loans dashboard displaying active liabilities and monthly obligations.
 - [`lib/screens/home_loan_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/home_loan_screen.dart): Dedicated Home Loan tracking with principal paid vs. outstanding metrics.
 - Models:
   - [`lib/models/emi_model.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/models/emi_model.dart): Loan title, bank name, EMI amount, due day, total tenure, remaining installments.
