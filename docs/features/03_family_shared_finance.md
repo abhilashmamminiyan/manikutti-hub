@@ -34,14 +34,19 @@ Family Shared Finance allows members of a household to pool and track collective
 - **Spreadsheet**: `FAMILY_SPREADSHEET_ID`
 - **Tabs**:
   - `Family_Expenses`: `[Date, Amount, Category, Note, AddedBy, FamilyCode]`
-  - `Family_Members`: `[Name, Email, Role (Admin/Member), JoinedDate]`
+  - `Family_Members`: `[Family Code, User Email, Role (Admin/Member), Joined Date, Nickname, Base Salary, Current Salary]` *(Backward compatible with legacy 6-column sheets where Col F was Monthly Income)*
   - `Invitations`: `[InviteCode, FamilyName, CreatedBy, ExpiryDate, Status]`
 
 ---
 
 ## 3. Data Flow & Mechanics
 
-1. **Family Invitation**:
+1. **Dynamic Salary & Base Salary Tracking**:
+   - Family members have a contractual **Base Salary** (standard baseline) and an editable **Current Salary** (this month's credited salary).
+   - Allows users whose monthly salary varies (overtime, bonuses, deductions, unpaid leave) to adjust their income for the current month without losing their base baseline.
+   - Users and Admins can update salary via Web Admin Overview (`OverviewTab.tsx`), Web Family Dashboard (`FamilyDashboard.tsx`), or Mobile Dashboard bottom sheet (`dashboard_screen.dart`).
+   - Endpoint `/api/sheets/family` (`action: updateMember`) handles atomic column updates (Col F for `baseSalary`, Col G for `currentSalary`). Backward compatibility defaults `currentSalary` to `baseSalary` when Col G is blank.
+2. **Family Invitation**:
    - Admin generates an invitation in `MembersTab.tsx`.
    - Generates random 6-character alphanumeric code stored in `Invitations` tab.
    - An invitation email with joining link is triggered.
