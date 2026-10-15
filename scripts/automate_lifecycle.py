@@ -5,14 +5,32 @@ import urllib.error
 import time
 import os
 import sys
+import argparse
 
 def get_token():
-    p = subprocess.Popen(['git', 'credential', 'fill'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-    out, _ = p.communicate('protocol=https\nhost=github.com\n\n')
-    for line in out.splitlines():
-        if line.startswith('password='):
-            return line.split('=', 1)[1].strip()
-    raise RuntimeError("Could not retrieve GitHub PAT from Git Credential Manager")
+    # 1. Environment variables
+    for var in ['GH_TOKEN', 'GITHUB_TOKEN']:
+        val = os.environ.get(var)
+        if val:
+            return val
+
+    # 2. Git Credential Manager
+    try:
+        p = subprocess.Popen(
+            ['git', 'credential', 'fill'],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
+        )
+        out, _ = p.communicate('protocol=https\nhost=github.com\n\n')
+        for line in out.splitlines():
+            if line.startswith('password='):
+                return line.split('=', 1)[1].strip()
+    except Exception as e:
+        print(f"Warning: Git Credential Manager lookup failed: {e}")
+
+    raise RuntimeError("Could not retrieve GitHub PAT from environment or Git Credential Manager")
 
 def api_request(url, method='GET', data=None, token=None):
     headers = {
@@ -33,18 +51,31 @@ def api_request(url, method='GET', data=None, token=None):
         raise
 
 def main():
+    parser = argparse.ArgumentParser(description="Automate PR creation, CI monitoring, and merge")
+    parser.add_argument("--repo", default="abhilashmamminiyan/manikutti_mobile", help="Owner/repo slug")
+    parser.add_argument("--head", required=True, help="Head branch name")
+    parser.add_argument("--base", default="main", help="Base branch name")
+    parser.add_argument("--title", required=True, help="PR title")
+    parser.add_argument("--body", default="", help="PR description")
+    parser.add_argument("--auto-merge", action="store_true", default=True, help="Auto-merge when CI passes")
+    parser.add_argument("--no-merge", dest="auto_merge", action="store_false", help="Do not merge PR")
+
+    args = parser.parse_args()
+
     token = get_token()
     print("Retrieved GitHub PAT successfully.")
 
-    repo = "abhilashmamminiyan/manikutti_mobile"
-    head = "feature/personal-finance-dashboard-refactor"
-    base = "main"
+    repo = args.repo
+    head = args.head
+    base = args.base
+    title = args.title
+    body = args.body or f"Automated Pull Request for feature branch {head}."
 
     # 1. Check existing PR
-    print(f"Checking for existing open PR for {head}...")
-    existing_url = f"https://api.github.com/repos/{repo}/pulls?head=abhilashmamminiyan:{head}&state=open"
+    print(f"Checking for existing open PR for {head} -> {base}...")
+    existing_url = f"https://api.github.com/repos/{repo}/pulls?head={repo.split('/')[0]}:{head}&state=open"
     existing = api_request(existing_url, token=token)
-    
+
     pr_number = None
     pr_url = None
     if existing:
@@ -55,20 +86,10 @@ def main():
         print(f"Creating new PR for {head} -> {base}...")
         create_url = f"https://api.github.com/repos/{repo}/pulls"
         pr_payload = {
-            "title": "feat(dashboard): personal finance dashboard with budget progress, pie chart, dues table, and family EMI ledger",
+            "title": title,
             "head": head,
             "base": base,
-            "body": (
-                "## Summary & Improvements\n"
-                "- **Dashboard Layout Fix**: Removed docked Sidebar rail from body: Row(...) that squished mobile dashboard to ~300px; navigation smoothly accessible via hamburger drawer and profile bottom sheet.\n"
-                "- **Header & Screen Name Restoration**: Streamlined AppBar to clean hamburger, bold uncompressed screen title, and 3 essential actions (Voice Logging mic, Notifications with unread badge, and Profile/Settings sheet).\n"
-                "- **Monthly Budget & Pace Progress Bar**: Interactive card comparing monthly personal spending against salary/budget with burn rate (₹/day) and remaining days pace indicator.\n"
-                "- **Spending Breakdown Donut / Pie Chart**: Custom painter animated donut chart with center total spend metric and category percentages.\n"
-                "- **Monthly Utilities & Dues Section**: Exact recreation of user reference table with Add Monthly Dues dialog and one-tap payment marking.\n"
-                "- **Family Loans & EMI Ledger**: Comprehensive loan cards for Home Loan (mortgage) and consumer EMIs showing balance, installment progress (e.g. 14/36 months), principal paid, interest paid, and remaining balance.\n"
-                "- **App Lock & Voice Overlay**: Configured 2-minute lock grace period and decoupled VoiceDialogActivity for transparent home screen overlay.\n"
-                "- **Tests**: All 32 unit and widget tests passing cleanly."
-            )
+            "body": body
         }
         res = api_request(create_url, method='POST', data=pr_payload, token=token)
         pr_number = res['number']
@@ -76,13 +97,13 @@ def main():
         print(f"Created PR #{pr_number}: {pr_url}")
 
     # 2. Monitor GitHub Actions CI Runs
-    print(f"Monitoring GitHub Actions CI runs for PR #{pr_number}...")
-    max_wait = 180  # 3 minutes
+    print(f"\nMonitoring GitHub Actions CI runs for PR #{pr_number}...")
+    max_wait = 600  # 10 minutes for build
     start_time = time.time()
-    run_id = None
+    last_status = None
 
     while time.time() - start_time < max_wait:
-        runs_url = f"https://api.github.com/repos/{repo}/actions/runs?branch={head}&event=pull_request"
+        runs_url = f"https://api.github.com/repos/{repo}/actions/runs?branch={head}"
         try:
             runs_data = api_request(runs_url, token=token)
             runs = runs_data.get('workflow_runs', [])
@@ -91,39 +112,56 @@ def main():
                 run_id = latest_run['id']
                 status = latest_run['status']
                 conclusion = latest_run['conclusion']
-                print(f"Workflow Run #{run_id} ({latest_run.get('name', 'CI')}): status={status}, conclusion={conclusion}")
+                run_name = latest_run.get('name', 'CI')
+
+                current_status_str = f"Run #{run_id} ({run_name}): status={status}, conclusion={conclusion}"
+                if current_status_str != last_status:
+                    print(f"[{time.strftime('%H:%M:%S')}] {current_status_str}")
+                    last_status = current_status_str
+
                 if status == 'completed':
                     if conclusion == 'success':
-                        print("CI Pipeline PASSED successfully!")
+                        print("✅ GitHub Actions CI Pipeline PASSED successfully!")
                         break
                     else:
-                        print(f"CI Pipeline finished with conclusion: {conclusion}")
-                        break
+                        print(f"❌ CI Pipeline finished with conclusion: {conclusion}")
+                        # Fetch failed logs
+                        logs_url = f"https://api.github.com/repos/{repo}/actions/runs/{run_id}/jobs"
+                        jobs_data = api_request(logs_url, token=token)
+                        for job in jobs_data.get('jobs', []):
+                            if job.get('conclusion') == 'failure':
+                                print(f"\nFailed Job: {job.get('name')} (Status: {job.get('conclusion')})")
+                                for step in job.get('steps', []):
+                                    if step.get('conclusion') == 'failure':
+                                        print(f"  ❌ Failed Step: {step.get('name')}")
+                        sys.exit(1)
         except Exception as e:
-            print(f"Error checking runs: {e}")
+            print(f"Checking workflow run: {e}")
         time.sleep(10)
 
     # 3. Check PR Merge Status or Squash Merge
-    print(f"Checking merge status of PR #{pr_number}...")
-    pr_details_url = f"https://api.github.com/repos/{repo}/pulls/{pr_number}"
-    pr_details = api_request(pr_details_url, token=token)
-    if pr_details.get('merged'):
-        print(f"PR #{pr_number} is already MERGED!")
-    else:
-        print(f"Attempting to squash merge PR #{pr_number}...")
-        merge_url = f"https://api.github.com/repos/{repo}/pulls/{pr_number}/merge"
-        merge_payload = {
-            "commit_title": f"feat(dashboard): personal finance dashboard with budget progress, pie chart, dues table, and family EMI ledger (#{pr_number})",
-            "merge_method": "squash"
-        }
-        try:
-            merge_res = api_request(merge_url, method='PUT', data=merge_payload, token=token)
-            if merge_res.get('merged'):
-                print(f"PR #{pr_number} successfully MERGED via API!")
-            else:
-                print(f"Merge response: {merge_res}")
-        except Exception as e:
-            print(f"Merge error (may be waiting for CI checks): {e}")
+    if args.auto_merge:
+        print(f"\nChecking merge status of PR #{pr_number}...")
+        pr_details_url = f"https://api.github.com/repos/{repo}/pulls/{pr_number}"
+        pr_details = api_request(pr_details_url, token=token)
+        if pr_details.get('merged'):
+            print(f"✅ PR #{pr_number} is already MERGED!")
+        else:
+            print(f"Attempting to squash merge PR #{pr_number}...")
+            merge_url = f"https://api.github.com/repos/{repo}/pulls/{pr_number}/merge"
+            merge_payload = {
+                "commit_title": f"{title} (#{pr_number})",
+                "merge_method": "squash"
+            }
+            try:
+                merge_res = api_request(merge_url, method='PUT', data=merge_payload, token=token)
+                if merge_res.get('merged'):
+                    print(f"🎉 PR #{pr_number} successfully MERGED into {base}!")
+                else:
+                    print(f"Merge response: {merge_res}")
+            except Exception as e:
+                print(f"Merge error: {e}")
+                sys.exit(1)
 
 if __name__ == '__main__':
     main()
