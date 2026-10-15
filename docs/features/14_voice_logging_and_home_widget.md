@@ -5,7 +5,7 @@ This module provides fast, zero-friction expense logging and financial awareness
 1. **Interactive Phone Home Screen Widget**: Displays Month-to-Date total expenses, nearest pending mobile recharge / utility bill alert, and 1-tap quick action buttons (Voice Mic and Manual Add).
 2. **AI Voice Expense Logging Engine**: Real-time on-device speech-to-text supporting Malayalam (`ml_IN`), Manglish, and English (`en_IN`), parsed by Google Gemini AI with intelligent offline regex fallback.
 3. **Android Quick Settings Tile**: Notification shade tile accessible from any screen or lock screen with Manikutti branding and microphone.
-4. **Google Assistant & Siri Shortcuts**: Deep linking via `manikutti://voice-expense` and App Actions (`actions.intent.RECORD_EXPENSE`).
+4. **Google Assistant & Siri Shortcuts**: Deep linking via `manikutti://voice-dialog` / `manikutti://voice-expense`, Google Assistant App Actions (`actions.intent.OPEN_APP_FEATURE` with localized Malayalam & English feature synonyms), and 1-tap Assistant Routines.
 
 ---
 
@@ -28,7 +28,8 @@ This module provides fast, zero-friction expense logging and financial awareness
 - [`android/app/src/main/kotlin/com/abhilash/manikutti/ManikuttiHomeWidgetProvider.kt`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/android/app/src/main/kotlin/com/abhilash/manikutti/ManikuttiHomeWidgetProvider.kt): Native `AppWidgetProvider` updating RemoteViews and binding `widget_btn_mic` with an explicit `PendingIntent` (requestCode 100).
 - [`android/app/src/main/kotlin/com/abhilash/manikutti/ManikuttiVoiceTileService.kt`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/android/app/src/main/kotlin/com/abhilash/manikutti/ManikuttiVoiceTileService.kt): Android `TileService` for Notification Shade quick toggle launching `VoiceDialogActivity`.
 - [`android/app/src/main/res/layout/widget_layout.xml`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/android/app/src/main/res/layout/widget_layout.xml): Home screen widget layout.
-- [`android/app/src/main/res/xml/shortcuts.xml`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/android/app/src/main/res/xml/shortcuts.xml): Google Assistant App Actions & app launcher shortcuts routing to `VoiceDialogActivity`.
+- [`android/app/src/main/res/xml/shortcuts.xml`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/android/app/src/main/res/xml/shortcuts.xml): Google Assistant App Actions (`OPEN_APP_FEATURE`, `CREATE_ITEM`) & app launcher shortcuts routing to `VoiceDialogActivity`.
+- [`android/app/src/main/res/values/arrays.xml`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/android/app/src/main/res/values/arrays.xml): Feature synonyms for Assistant voice routing in Malayalam and English.
 - [`android/app/src/main/res/xml/manikutti_widget_info.xml`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/android/app/src/main/res/xml/manikutti_widget_info.xml): AppWidget provider metadata.
 - [`android/app/src/main/res/values/styles.xml`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/android/app/src/main/res/values/styles.xml) & `values-night/styles.xml`: Declares `TransparentTheme` (`Theme.Translucent.NoTitleBar`) with dim amount.
 
