@@ -20,12 +20,12 @@ This module provides fast, zero-friction expense logging and financial awareness
 - [`lib/widgets/spiral_voice_waves.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/widgets/spiral_voice_waves.dart): CustomPainter acoustic wave visualizer featuring the Manikutti logo emblem at the center with 4 rotating holographic spiral arms and expanding ripple rings.
 - [`lib/widgets/voice_dialog_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/widgets/voice_dialog_screen.dart): Translucent floating dialog overlay rendered directly over the phone's home screen wallpaper or current app without opening the main app.
 - [`lib/widgets/voice_logging_sheet.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/widgets/voice_logging_sheet.dart): In-app bottom sheet UI with speech recognition, language toggle (Malayalam / English), animated pulsing mic, and transaction card.
-- [`lib/main.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/main.dart): Deep link router (`manikutti://voice-dialog` and `manikutti://add-transaction`), `/voice-dialog` transparent route, and `HomeWidget.widgetClicked` stream listener.
+- [`lib/main.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/main.dart): Deep link router (`manikutti://voice-dialog` and `manikutti://add-transaction`), `/voice-dialog` transparent route, dedicated `@pragma('vm:entry-point') voiceDialogMain` entrypoint hosting `VoiceDialogApp`, and 2-minute App Lock timer exemption for voice dialogs.
 - [`lib/screens/dashboard_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/dashboard_screen.dart): Hosts in-app Voice AI button in AppBar and triggers widget updates on data reload.
 
 ### Android Native Components
-- [`android/app/src/main/kotlin/com/abhilash/manikutti/VoiceDialogActivity.kt`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/android/app/src/main/kotlin/com/abhilash/manikutti/VoiceDialogActivity.kt): Native translucent Activity with `BackgroundMode.transparent` hosting `VoiceDialogScreen`.
-- [`android/app/src/main/kotlin/com/abhilash/manikutti/ManikuttiHomeWidgetProvider.kt`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/android/app/src/main/kotlin/com/abhilash/manikutti/ManikuttiHomeWidgetProvider.kt): Native `AppWidgetProvider` updating RemoteViews.
+- [`android/app/src/main/kotlin/com/abhilash/manikutti/VoiceDialogActivity.kt`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/android/app/src/main/kotlin/com/abhilash/manikutti/VoiceDialogActivity.kt): Native translucent Activity with `BackgroundMode.transparent`, `getDartEntrypointFunctionName() = "voiceDialogMain"`, and `singleInstance` task isolation.
+- [`android/app/src/main/kotlin/com/abhilash/manikutti/ManikuttiHomeWidgetProvider.kt`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/android/app/src/main/kotlin/com/abhilash/manikutti/ManikuttiHomeWidgetProvider.kt): Native `AppWidgetProvider` updating RemoteViews and binding `widget_btn_mic` with an explicit `PendingIntent` (requestCode 100).
 - [`android/app/src/main/kotlin/com/abhilash/manikutti/ManikuttiVoiceTileService.kt`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/android/app/src/main/kotlin/com/abhilash/manikutti/ManikuttiVoiceTileService.kt): Android `TileService` for Notification Shade quick toggle launching `VoiceDialogActivity`.
 - [`android/app/src/main/res/layout/widget_layout.xml`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/android/app/src/main/res/layout/widget_layout.xml): Home screen widget layout.
 - [`android/app/src/main/res/xml/shortcuts.xml`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/android/app/src/main/res/xml/shortcuts.xml): Google Assistant App Actions & app launcher shortcuts routing to `VoiceDialogActivity`.
@@ -37,9 +37,10 @@ This module provides fast, zero-friction expense logging and financial awareness
 ## 3. Data Flow & Mechanics
 
 1. **Floating Home Screen Overlay (Option B)**:
-   - Tapping the mic on the **Home Screen Widget** or **Quick Settings Tile** launches `VoiceDialogActivity`.
-   - The user stays on their home screen wallpaper (the main app dashboard does NOT open).
-   - A floating frosted-glass card pops up with a pulsing mic and live speech transcription.
+   - Tapping the mic on the **Home Screen Widget** or **Quick Settings Tile** launches `VoiceDialogActivity` directly via explicit `PendingIntent`.
+   - `VoiceDialogActivity` runs in an isolated task stack (`android:taskAffinity="com.abhilash.manikutti.voice"`, `launchMode="singleInstance"`) and boots dedicated entrypoint `voiceDialogMain`.
+   - The user stays on their home screen wallpaper without opening `MainActivity` or triggering `AppLockScreen`.
+   - A floating frosted-glass card pops up with the animated spiral acoustic wave visualizer and live speech transcription.
 2. **Google Assistant Hands-Free Execution**:
    - Spoken phrases like *"Hey Google, 100 roopakku petrol adichu, ith Manikuttiyil save cheyyu"* deliver the captured transcript directly via intent `manikutti://voice-dialog?query=...`.
    - The app processes the query in the background without opening the main UI.

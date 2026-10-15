@@ -101,4 +101,14 @@ Indian banks (SBI, HDFC, ICICI, Axis, Canara, Federal, etc.) send monthly e-stat
 3. **Offline Resilience**: Batch writes update local SQLite with `synced = 1` immediately, maintaining offline consistency.
 4. **Zero-Knowledge Privacy**: Bank statement passwords are processed strictly in local device RAM.
 5. **Multi-Bank Account Routing**: Transactions are assigned to the user-selected bank (`SBI` or `Canara Bank`), powering individual bank balances and overall totals on Dashboard.
+6. **Closing Balance Baseline Persistence**: Statement parsing extracts the statement closing balance and anchor date (`_statementClosingBalance` and `_statementClosingDate`), automatically persisting them to `BankBalanceService.instance.setVerifiedBalance(_selectedBank, closingBalance, closingDate)`.
 
+---
+
+## 7. Verified Statement Baseline & Live Balance Engine
+1. **Closing Balance Anchor**:
+   $$\text{Live Account Balance} = \text{Verified Statement Baseline} + \sum_{t > \text{Statement Date}} \text{Credits} - \sum_{t > \text{Statement Date}} \text{Debits}$$
+2. **Initial Seed**:
+   Upon first initialization, `BankBalanceService` establishes the confirmed statement anchor (SBI = ₹7,017.00, Canara Bank = ₹3,516.92 as of 2026-10-15).
+3. **Automated Continuous Calibration**:
+   Subsequent statement uploads automatically advance the anchor date and closing balance without recalculating legacy deltas.

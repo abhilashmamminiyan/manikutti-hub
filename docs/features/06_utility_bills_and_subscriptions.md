@@ -15,6 +15,8 @@ The Utility Bills and Subscriptions module tracks recurring domestic expenditure
   - `/api/sheets/monthly/route.ts`: Monthly recurring bills aggregation.
 
 ### Mobile Client (`manikutti_mobile`)
+- [`lib/screens/dashboard_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/dashboard_screen.dart): Integrates the recurring utilities and dues list directly on the dashboard screen with live status pills and one-tap payment recording.
+- [`lib/widgets/monthly_dues_section.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/widgets/monthly_dues_section.dart): Monthly utilities and dues table matching the web admin dues format with Bill Title, Due Day, Unpaid (orange) / Paid (green) pills, Amount, Actions, and quick "Add Monthly Dues" modal.
 - [`lib/screens/bills_dashboard.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/bills_dashboard.dart): Bills management dashboard displaying upcoming, paid, and overdue bills.
 - [`lib/screens/add_utility_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/add_utility_screen.dart): Form to register a new recurring utility bill.
 - [`lib/models/utility_model.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/models/utility_model.dart): Data model:
