@@ -36,17 +36,17 @@ function Write-Step {
 
 function Write-Success {
     param ([string]$Message)
-    Write-Host "✅ $Message" -ForegroundColor Green
+    Write-Host "[OK] $Message" -ForegroundColor Green
 }
 
 function Write-WarningMsg {
     param ([string]$Message)
-    Write-Host "⚠️  $Message" -ForegroundColor Yellow
+    Write-Host "[WARN] $Message" -ForegroundColor Yellow
 }
 
 function Write-ErrorMsg {
     param ([string]$Message)
-    Write-Host "❌ $Message" -ForegroundColor Red
+    Write-Host "[ERROR] $Message" -ForegroundColor Red
 }
 
 # Auto-resolve GH_TOKEN from Git Credential Manager if not already set
@@ -69,7 +69,7 @@ if (-not $env:GH_TOKEN) {
         foreach ($line in ($credOutput -split "`r?`n")) {
             if ($line -match "^password=(.+)$") {
                 $env:GH_TOKEN = $Matches[1].Trim()
-                Write-Host "🔑 Injected GitHub PAT from Git Credential Manager." -ForegroundColor Gray
+                Write-Host "[INFO] Injected GitHub PAT from Git Credential Manager." -ForegroundColor Gray
                 break
             }
         }
@@ -80,6 +80,10 @@ if (-not $env:GH_TOKEN) {
 
 # 1. Resolve Target Directory
 $WorkspaceRoot = "d:\MERN\Personal\my-apps\finance-tracker"
+if (Test-Path "$WorkspaceRoot\.gh") {
+    $env:GH_CONFIG_DIR = "$WorkspaceRoot\.gh"
+    Write-Host "Using repository-scoped GH_CONFIG_DIR: $env:GH_CONFIG_DIR" -ForegroundColor Gray
+}
 $TargetDir = switch ($Repo) {
     'mobile'  { "$WorkspaceRoot\manikutti_mobile" }
     'web'     { "$WorkspaceRoot\Manikutti" }
@@ -326,7 +330,7 @@ try {
         }
     }
 
-    Write-Host "`n🎉 All tasks completed successfully! PR #$PrNumber verified and merged." -ForegroundColor Green
+    Write-Host "`nAll tasks completed successfully! PR #$PrNumber verified and merged." -ForegroundColor Green
 } finally {
     Pop-Location
 }

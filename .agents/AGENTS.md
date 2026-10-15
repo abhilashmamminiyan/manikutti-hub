@@ -23,4 +23,12 @@ Before and after modifying any code in this repository:
 2. **Pull Before Push**: Always pull the latest changes from the remote tracking branch before attempting to push, to avoid merge conflicts and rejected pushes.
 3. **Always Sync with Main Before Merging**: Always fetch and merge the latest commits from `origin/main` into your feature branch before raising, testing, or merging a pull request to ensure full integration and prevent stale preview deployment failures.
 
-
+## 3. GitHub CLI (`gh`) & Pull Request Automation Rules
+1. **Repository-Scoped GH Configuration (`.gh`)**:
+   - The repository is configured with a repository-local `.gh` configuration directory (`$WorkspaceRoot\.gh`) for GitHub CLI (`gh`) commands.
+   - When executing `gh` commands or automation scripts (`scripts/automate_pr.ps1` / `scripts/automate_pr.sh`), always ensure `GH_CONFIG_DIR` points to the workspace `.gh` directory (`$WorkspaceRoot\.gh`) if present.
+2. **Pull Request Lifecycle & CI Verification**:
+   - When a feature or bugfix is completed, ask for user confirmation and run `scripts/automate_pr.ps1` (or `scripts/automate_pr.sh`).
+   - Always observe the live GitHub Actions workflow run via `gh run watch`.
+   - If the pipeline fails, inspect the failed step logs via `gh run view <id> --log-failed`, resolve the issue immediately, and rerun the pipeline until it passes.
+   - Once verified green, confirm merge into `main` and synchronize the master hub submodule commit pointer.

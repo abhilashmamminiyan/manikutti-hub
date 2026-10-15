@@ -17,6 +17,11 @@ AUTO_MERGE=true
 
 WORKSPACE_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
+if [ -d "$WORKSPACE_ROOT/.gh" ]; then
+    export GH_CONFIG_DIR="$WORKSPACE_ROOT/.gh"
+    echo "Using repository-scoped GH_CONFIG_DIR: $GH_CONFIG_DIR"
+fi
+
 case "$REPO" in
     mobile)  TARGET_DIR="$WORKSPACE_ROOT/manikutti_mobile" ;;
     web)     TARGET_DIR="$WORKSPACE_ROOT/Manikutti" ;;
