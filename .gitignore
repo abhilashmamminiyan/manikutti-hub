@@ -1,0 +1,6 @@
+# GitHub CLI local repo configuration
+.gh/
+
+# Scratch & temporary logs
+*.log
+scratch/

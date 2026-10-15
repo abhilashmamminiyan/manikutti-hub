@@ -30,9 +30,9 @@ The Bank Statement Upload feature allows users to upload monthly bank statements
 
 ### Next.js Backend & API (`Manikutti`)
 - [`src/app/api/statement/parse/route.ts`](file:///d:/MERN/Personal/my-apps/finance-tracker/Manikutti/src/app/api/statement/parse/route.ts):
-  - Multimodal Gemini 2.5 Flash / 1.5 Flash parser receiving PDF and CSV statements.
+  - Multimodal Gemini 2.0 Flash / 1.5 Flash parser receiving raw text (`textContent`), PDF, and CSV statements.
   - Extracts normalized Date (`YYYY-MM-DD`), Amount, Type (`Expense` vs `Income`), Category, Description, and clean Note.
-  - Local rule-based CSV fallback parser if Gemini API key is unavailable or rate-limited.
+  - Intelligent regex/column fallback parser for Indian bank statements (SBI, HDFC, ICICI, Canara, Axis, Federal) and standard CSVs if Gemini is unavailable, rate-limited, or encounters custom fonts.
 - [`src/app/api/sheets/expense/route.ts`](file:///d:/MERN/Personal/my-apps/finance-tracker/Manikutti/src/app/api/sheets/expense/route.ts):
   - Enhanced POST handler to accept `expenses` array for high-performance single-call batch row append to Google Sheets.
 - [`src/lib/googleSheets.ts`](file:///d:/MERN/Personal/my-apps/finance-tracker/Manikutti/src/lib/googleSheets.ts):
