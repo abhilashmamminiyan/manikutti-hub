@@ -97,4 +97,15 @@ Indian banks (SBI, HDFC, ICICI, Axis, Canara, Federal, etc.) send monthly e-stat
 3. **Offline Resilience**: Batch writes update local SQLite with `synced = 1` immediately, maintaining offline consistency.
 4. **Zero-Knowledge Privacy**: Bank statement passwords are processed strictly in local device RAM.
 5. **Multi-Bank Account Routing**: Transactions are assigned to the user-selected bank (`SBI` or `Canara Bank`), powering individual bank balances and overall totals on Dashboard.
+6. **Transaction ID vs. Amount Disambiguation**: In statements featuring explicit `TRANS ID`, `Tran Id`, `Chq No`, or `Ref No` columns (such as Canara Bank CBS statements), candidate numeric sequences immediately preceding transaction values are filtered out from the `amount` field, accurately assigned to the debit/credit monetary value, and preserved within the transaction's narration/description for reference.
+
+---
+
+## 7. Canara Bank & Indian Bank Statement Parsing Rules
+- **Problem Handled**: In Canara Bank statements, lines commonly format as `[Date] [Value Date] [Particulars] [TRANS ID] [Withdrawal] [Deposit] [Balance]`. If one of Withdrawal or Deposit is blank, text extraction produces sequences like `[TRANS ID, Amount, Balance]`.
+- **Parsing Invariant**: In banking, a transaction cannot have both `Debit > 0` and `Credit > 0` simultaneously.
+  - When two positive numbers precede `Balance`: The first number is strictly identified as the integer reference identifier (`TRANS ID` / `Cheque No`), and the second number is extracted as the transaction `amount`.
+  - The extracted `TRANS ID` is appended to the transaction description (`(Txn: <id>)`) to maintain searchability and reference.
+  - Gemini multimodal backend prompt includes explicit negative constraints instructing the model never to extract `TRANS ID` / `Chq No` as the monetary `amount`.
+
 
