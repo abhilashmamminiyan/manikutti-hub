@@ -72,10 +72,14 @@ sequenceDiagram
 ---
 
 ## 4. Duplicate Detection & Prevention Contract
-- **Rule**: When parsing transactions from bank statements, if a transaction has the **exact same normalized date (`YYYY-MM-DD`)** and **same numeric amount (`abs(diff) < 0.01`)** with matching type (`Expense`/`Income`) as an existing record in the SQLite database, it is identified as a duplicate.
+- **Pre-Parsing Cloud Sync**: Before candidate extraction, `BankStatementScreen` invokes `SyncService.instance.syncData()` to ensure all manual entries recorded on Web or other clients exist locally in SQLite.
+- **Multi-Tier Matching Rules**:
+  1. **Exact Date Match (`daysDiff == 0`)**: Identical normalized date (`YYYY-MM-DD`), matching amount (`abs(diff) < 0.01`), and matching transaction type (`Expense` vs `Income`). Flagged as: `Already logged manually on <Date>: ₹<Amount> (<Note/Category>)`.
+  2. **Settlement / Clearing Lag Match (`daysDiff <= 2`)**: Catches manual entries recorded on the purchase or credit date where the bank statement posted 1 to 2 days later due to settlement cycles. Flagged as: `Matches manual entry on <Date> (±<Days> days): ₹<Amount> (<Note/Category>)`.
+  3. **Strict 1:1 Identity (`matchedExistingIds`)**: An existing transaction can only match one candidate statement line, preventing multiple duplicate flags for repeated recurring charges.
 - **Handling**:
-  - Automatically unselected (`isSelected = false`) by default.
-  - Flagged with an amber badge explaining the existing match.
+  - Automatically unselected (`isSelected = false`) and marked `isDuplicate = true` by default.
+  - Flagged with an amber badge explaining the exact manual entry that triggered the duplicate filter.
   - Segregated under the `Duplicates` tab for transparency, allowing manual user override if identical legitimate purchases occurred.
 
 ---

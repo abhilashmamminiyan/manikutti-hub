@@ -46,6 +46,14 @@ Family Shared Finance allows members of a household to pool and track collective
    - Allows users whose monthly salary varies (overtime, bonuses, deductions, unpaid leave) to adjust their income for the current month without losing their base baseline.
    - Users and Admins can update salary via Web Admin Overview (`OverviewTab.tsx`), Web Family Dashboard (`FamilyDashboard.tsx`), or Mobile Dashboard bottom sheet (`dashboard_screen.dart`).
    - Endpoint `/api/sheets/family` (`action: updateMember`) handles atomic column updates (Col F for `baseSalary`, Col G for `currentSalary`). Backward compatibility defaults `currentSalary` to `baseSalary` when Col G is blank.
+2. **Automated Monthly Salary Prompt & Income Logging (Day 4 & Day 5)**:
+   - On the 4th of every month at 9:00 AM, `NotificationService` (ID `9004`, channel `salary_channel`) triggers an actionable alert: *"Have you got your salary?"*.
+   - A prominent **Salary Prompt Banner** appears on the Mobile Dashboard with three one-tap options:
+     - **Yes**: Automatically logs the current effective salary as an `Income` transaction (category: `'Salary'`, note: `'Monthly Salary Income'`) in SQLite and Google Sheets, marks the month confirmed in `SharedPreferences`, and cancels further alerts.
+     - **Basic**: Logs the contractual baseline (`Base Salary`) as `Income`, marks the month confirmed, and cancels further alerts.
+     - **Edit**: Opens the *"Edit Salary Income"* dialog allowing the user to input the exact credited amount, optionally update the standard base salary baseline, and check *"Record as Income in transaction log for this month"*.
+   - **Day 5 Follow-Up**: If the user has not confirmed or logged a salary transaction by Day 5, a follow-up notification (ID `9005`) and Day 5 dashboard banner are dispatched.
+   - **Auto-Dismissal**: If a salary income transaction for the current calendar month is already detected in the ledger, the prompt banner and notifications are automatically suppressed.
 2. **Family Invitation**:
    - Admin generates an invitation in `MembersTab.tsx`.
    - Generates random 6-character alphanumeric code stored in `Invitations` tab.
