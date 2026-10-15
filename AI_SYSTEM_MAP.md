@@ -75,7 +75,9 @@ docs/
     ├── 10_notifications_and_alerts.md        # Local notifications, background polling
     ├── 11_calculator_and_financial_tools.md  # In-app calculator, history, expense math
     ├── 12_internationalization_and_theming.md# Flutter l10n (EN/ML), Material 3 theming
-    └── 13_bank_statement_upload.md          # Multi-format bank statement parsing, zero-knowledge PDF decrypt, deduplication
+    ├── 13_bank_statement_upload.md          # Multi-format bank statement parsing, zero-knowledge PDF decrypt, deduplication
+    ├── 14_voice_logging_and_home_widget.md   # Android Home Screen widget, AI voice expense, Assistant shortcuts
+    └── 15_app_feature_guide_and_release_notes.md # Non-technical feature catalog, screenshot tutorials, What's New release notes
 ```
 
 ---
