@@ -11,6 +11,7 @@ The Bank Statement Upload feature allows users to upload monthly bank statements
 - [`lib/screens/bank_statement_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/bank_statement_screen.dart):
   - Primary UI for bank statement file picking, review, and editing.
   - Interactive file selection supporting `.pdf`, `.csv`, `.xlsx`, and `.xls`.
+  - Target bank account selector (`SBI` and `Canara Bank`) on both upload placeholder and review screen.
   - Duplicate detection engine comparing candidate dates (`YYYY-MM-DD`) and amounts with local SQLite records.
   - Filter segmented tabs: `Ready to Import`, `Duplicates Only`, and `All Rows`.
   - Per-row editable note text field and dynamic category dropdown selector.
@@ -92,6 +93,8 @@ Indian banks (SBI, HDFC, ICICI, Axis, Canara, Federal, etc.) send monthly e-stat
 
 ## 6. Architectural Contracts Preserved
 1. **UTC Timestamps**: All saved transactions are normalized to ISO UTC strings (`.toUtc().toIso8601String()`).
-2. **Schema Invariance**: Google Sheets `Personal_Expenses!A:G` schema is preserved without alteration.
+2. **Schema Invariance & Forward Compatibility**: Google Sheets `Personal_Expenses!A:H` schema now includes Bank Account (Column H), defaulting to `'SBI'` for all legacy rows.
 3. **Offline Resilience**: Batch writes update local SQLite with `synced = 1` immediately, maintaining offline consistency.
 4. **Zero-Knowledge Privacy**: Bank statement passwords are processed strictly in local device RAM.
+5. **Multi-Bank Account Routing**: Transactions are assigned to the user-selected bank (`SBI` or `Canara Bank`), powering individual bank balances and overall totals on Dashboard.
+

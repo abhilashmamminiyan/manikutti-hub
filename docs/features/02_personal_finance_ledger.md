@@ -19,17 +19,18 @@ The Personal Finance Ledger enables individual users to record, categorize, insp
 - API Route:
   - `src/app/api/sheets/expense/route.ts`: GET, POST, PUT, DELETE for personal transactions.
 
-- [`lib/screens/dashboard_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/dashboard_screen.dart): Mobile main ledger view with monthly totals, category cards, AI advisor card, quick transaction list limited to latest 5 items of current calendar month with "See All" action, and [`lib/widgets/sidebar_pulse_handle.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/widgets/sidebar_pulse_handle.dart) (floating left-edge handle with pulsing arrow and options icon to open the sidebar drawer).
+- [`lib/screens/dashboard_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/dashboard_screen.dart): Mobile main ledger view with overall balance, income, and spent, dual-bank live breakdown badges (SBI & Canara Bank), dedicated Bank Accounts Summary card with individual balances and month-to-date income/expense breakdown, AI advisor card, quick transaction list limited to latest 5 items of current calendar month with "See All" action, and [`lib/widgets/sidebar_pulse_handle.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/widgets/sidebar_pulse_handle.dart) (floating left-edge handle with pulsing arrow and options icon to open the sidebar drawer).
 - [`lib/screens/transactions_log_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/transactions_log_screen.dart): Dedicated transactions log screen with:
+  - Bank Account filters (`All Banks`, `SBI`, `Canara Bank`) and bank badges on transaction cards.
   - Date filtering (`This Month`, `Last Month`, `All Time`, `Custom Range` with DateRangePicker).
   - Amount ordering (Amount High to Low, Low to High) and date sorting (Newest first, Oldest first).
   - Type filters (`All`, `Personal`, `Family`).
   - Search by note, category, or type.
   - Filtered inflow/outflow summary cards and pull-to-refresh synchronization.
-- [`lib/screens/bank_statement_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/bank_statement_screen.dart): Bank statement upload screen with AI extraction, duplicate prevention, and note editing per row (see Feature 13).
-- [`lib/screens/add_transaction_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/add_transaction_screen.dart): Form to input amount, category, date, notes, and toggle Personal vs. Family.
-- [`lib/models/transaction_model.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/models/transaction_model.dart): Dart representation of transactions.
-- [`lib/database/db_helper.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/database/db_helper.dart): SQLite CRUD methods for table `transactions`.
+- [`lib/screens/bank_statement_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/bank_statement_screen.dart): Bank statement upload screen with target bank account selector (`SBI` / `Canara Bank`), AI extraction, duplicate prevention, and note editing per row (see Feature 13).
+- [`lib/screens/add_transaction_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/add_transaction_screen.dart): Form to input amount, category, date, notes, bank account selection (`SBI` or `Canara Bank`), and toggle Personal vs. Family.
+- [`lib/models/transaction_model.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/models/transaction_model.dart): Dart representation of transactions including `bankAccount` field (defaults to `'SBI'`).
+- [`lib/database/db_helper.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/database/db_helper.dart): SQLite CRUD methods for table `transactions` (Database version 3 with `bankAccount TEXT` column migration).
 
 ### Database & Google Sheets
 - **Spreadsheet**: `Manikutti_Personal_<userEmail>` (Mapped in Admin Index `User_Sheets!A:B`).
@@ -42,6 +43,7 @@ The Personal Finance Ledger enables individual users to record, categorize, insp
   - `Col E`: Status / isPaid (`Paid` / `Pending`)
   - `Col F`: Type (`Expense` / `Income`)
   - `Col G`: Added By (User email)
+  - `Col H`: Bank Account (`SBI` / `Canara Bank`, defaults to `'SBI'`)
 
 ---
 
