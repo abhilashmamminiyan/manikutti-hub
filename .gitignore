@@ -4,3 +4,5 @@
 # Scratch & temporary logs
 *.log
 scratch/
+__pycache__/
+*.pyc
