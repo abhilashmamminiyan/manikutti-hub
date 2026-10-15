@@ -26,6 +26,7 @@ The Personal Finance Ledger enables individual users to record, categorize, insp
   - Type filters (`All`, `Personal`, `Family`).
   - Search by note, category, or type.
   - Filtered inflow/outflow summary cards and pull-to-refresh synchronization.
+- [`lib/screens/bank_statement_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/bank_statement_screen.dart): Bank statement upload screen with AI extraction, duplicate prevention, and note editing per row (see Feature 13).
 - [`lib/screens/add_transaction_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/add_transaction_screen.dart): Form to input amount, category, date, notes, and toggle Personal vs. Family.
 - [`lib/models/transaction_model.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/models/transaction_model.dart): Dart representation of transactions.
 - [`lib/database/db_helper.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/database/db_helper.dart): SQLite CRUD methods for table `transactions`.
