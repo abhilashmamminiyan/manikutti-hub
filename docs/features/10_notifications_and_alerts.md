@@ -8,13 +8,27 @@ Timely notifications keep family members informed about critical financial miles
 ## 2. Source Files & Implementation Matrix
 
 ### Mobile Client (`manikutti_mobile`)
+- [`lib/screens/notification_settings_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/notification_settings_screen.dart):
+  - Comprehensive user-facing notification preferences screen.
+  - Live OS permission monitor (detects whether Android permits notifications or is blocking them).
+  - 1-tap deep bridge to phone's Android App Notification Settings via native MethodChannel.
+  - Granular toggles: Voice & Widget Expense Confirmations (`key_voice_notifications_enabled`), Salary Reminders (`key_salary_notifications_enabled`), Bill Due Alerts (`key_bill_due_notifications_enabled`), Family Shared Finance Alerts (`key_payment_notifications_enabled`).
+  - "Send Test Notification" action for instant on-device shade delivery verification.
+- [`lib/screens/settings_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/settings_screen.dart):
+  - Houses the top-level `Notifications` preference tile routing to `NotificationSettingsScreen`.
 - [`lib/services/notification_service.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/services/notification_service.dart):
-  - Wraps `flutter_local_notifications`.
+  - Wraps `flutter_local_notifications` with dedicated vector small icon `ic_notification` (`drawable/ic_notification.xml`) and voice icon `ic_tile_mic` (`drawable/ic_tile_mic.xml`).
   - Android notification channel configuration:
-    - ID: `manikutti_alerts`
-    - Name: `Manikutti Financial Alerts`
-    - Importance: `Importance.high`, `Priority.high`.
-  - Methods: `initialize()`, `showImmediateNotification()`, `scheduleNotification()`, `cancelNotification()`.
+    - ID: `voice_expense_channel_v2` (Voice & Widget Expenses, `Importance.max`, `Priority.high`, `playSound: true`, `enableVibration: true`, `showBadge: true`).
+    - ID: `payment_channel` (Payment Notifications).
+    - ID: `salary_channel` (Salary Reminders).
+    - ID: `recharge_channel` (Mobile Recharge Reminders).
+    - ID: `utility_channel` (Utility Reminders).
+  - Methods: `initialize()`, `areNotificationsEnabled()`, `openSystemNotificationSettings()`, `showImmediateNotification()`, `sendTestNotification()`, `scheduleMonthlyReminder()`, etc.
+- [`lib/services/voice_expense_service.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/services/voice_expense_service.dart):
+  - Checks user toggle `key_voice_notifications_enabled` before posting immediate confirmation notification to `voice_expense_channel_v2` with `ic_tile_mic`.
+- [`android/app/src/main/kotlin/com/abhilash/manikutti/MainActivity.kt`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/android/app/src/main/kotlin/com/abhilash/manikutti/MainActivity.kt) & [`VoiceDialogActivity.kt`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/android/app/src/main/kotlin/com/abhilash/manikutti/VoiceDialogActivity.kt):
+  - Implements MethodChannel `com.abhilash.manikutti/settings` launching `Settings.ACTION_APP_NOTIFICATION_SETTINGS`.
 - [`lib/main.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/main.dart):
   - Workmanager background execution callback:
     ```dart
