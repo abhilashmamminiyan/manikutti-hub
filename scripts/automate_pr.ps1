@@ -272,13 +272,19 @@ try {
         Write-Host "Watching CI execution logs in real-time..." -ForegroundColor Gray
         try {
             gh run watch $RunId --repo $RepoSlug --exit-status
+            if ($LASTEXITCODE -ne 0) {
+                Write-ErrorMsg "GitHub Actions CI pipeline FAILED!"
+                Write-Host "`n=== FAILED CI LOG SUMMARY ===" -ForegroundColor Red
+                gh run view $RunId --repo $RepoSlug --log-failed
+                Write-Host "=============================" -ForegroundColor Red
+                exit 1
+            }
             Write-Success "GitHub Actions CI pipeline PASSED successfully!"
         } catch {
             Write-ErrorMsg "GitHub Actions CI pipeline FAILED or timed out!"
             Write-Host "`n=== FAILED CI LOG SUMMARY ===" -ForegroundColor Red
             gh run view $RunId --repo $RepoSlug --log-failed
             Write-Host "=============================" -ForegroundColor Red
-            Write-ErrorMsg "Please fix the compilation/test errors shown above and re-run this script."
             exit 1
         }
     } else {
