@@ -2,10 +2,23 @@
 
 ## 1. Overview & Purpose
 This module provides fast, zero-friction expense logging and financial awareness without requiring the user to open or navigate the full app. It integrates:
-1. **Interactive Phone Home Screen Widget**: Displays Month-to-Date total expenses, nearest pending mobile recharge / utility bill alert, and 1-tap quick action buttons (Voice Mic and Manual Add).
-2. **AI Voice Expense Logging Engine**: Real-time on-device speech-to-text supporting Malayalam (`ml_IN`), Manglish, and English (`en_IN`), parsed by Google Gemini AI with intelligent offline regex fallback.
-3. **Android Quick Settings Tile**: Notification shade tile accessible from any screen or lock screen with Manikutti branding and microphone.
-4. **Google Assistant & Siri Shortcuts**: Deep linking via `manikutti://voice-dialog` / `manikutti://voice-expense`, Google Assistant App Actions (`actions.intent.OPEN_APP_FEATURE` with localized Malayalam & English feature synonyms), and 1-tap Assistant Routines.
+1. **Interactive Home Screen Keypad Widget ("Manikutti Quick Keypad")**:
+   - Features an on-screen numeric calculator keypad (`1-9`, `0`, Clear `C`, Backspace `⌫`), preset chips (`+50`, `+100`, `+500`), and category selector directly on the user's home screen.
+   - Bypasses Android's soft-keyboard limitation on `RemoteViews` by updating input state natively in < 10ms via explicit `BroadcastReceiver` intents.
+   - Saves expenses directly into local SQLite `transactions` table with an ISO 8601 UTC timestamp and `synced = 0`.
+   - Fires an immediate heads-up confirmation notification via `voice_expense_channel_v2` with vibration and sound.
+   - Updates the month total across all widgets instantaneously.
+2. **Summary & Quick Action Widget ("Manikutti Finance")**:
+   - Displays Month-to-Date total expenses, nearest pending mobile recharge / utility bill alert, and 1-tap quick action buttons (Voice Mic and Manual Add).
+3. **Category Preferences Manager**:
+   - Allows users to customize and add new expense categories directly from **Settings $\rightarrow$ Expense Categories**.
+   - Custom categories dynamically synchronize to the home screen Quick Log widget and manual transaction entry screens.
+4. **AI Voice Expense Logging Engine**:
+   - Real-time on-device speech-to-text supporting Malayalam (`ml_IN`), Manglish, and English (`en_IN`), parsed by Google Gemini AI with intelligent offline regex fallback.
+5. **Android Quick Settings Tile**:
+   - Notification shade tile accessible from any screen or lock screen with Manikutti branding and microphone.
+6. **Google Assistant & Siri Shortcuts**:
+   - Deep linking via `manikutti://voice-dialog` / `manikutti://voice-expense`, Google Assistant App Actions (`actions.intent.OPEN_APP_FEATURE` with localized Malayalam & English feature synonyms), and 1-tap Assistant Routines.
 
 ---
 
@@ -19,12 +32,16 @@ This module provides fast, zero-friction expense logging and financial awareness
 - [`public/.well-known/assetlinks.json`](file:///d:/MERN/Personal/my-apps/finance-tracker/Manikutti/public/.well-known/assetlinks.json): Digital Asset Links verification file enabling seamless Android App Links without browser disambiguation prompts.
 
 ### Mobile Client (`manikutti_mobile`)
+- [`lib/services/category_service.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/services/category_service.dart): Manages system and user-defined custom expense categories, persists them to `SharedPreferences`, syncs them to `HomeWidget` storage, and notifies active listeners.
+- [`lib/screens/category_preferences_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/category_preferences_screen.dart): Dedicated preferences screen for viewing, adding, and removing categories with immediate synchronization to widget and transaction logs.
+- [`lib/screens/settings_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/settings_screen.dart): Hosts the "Expense Categories" settings card navigating to `CategoryPreferencesScreen`.
+- [`lib/screens/add_transaction_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/add_transaction_screen.dart): Dynamically populates expense categories from `CategoryService`.
+- [`lib/services/widget_data_service.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/services/widget_data_service.dart): Aggregates monthly expense total, synchronizes category list, and dispatches updates to both `ManikuttiHomeWidgetProvider` and `ManikuttiQuickLogWidgetProvider`.
 - [`lib/services/voice_expense_service.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/services/voice_expense_service.dart): Core voice service handling Gemini API integration, offline regex parser with multilingual intent extraction (`create` vs `delete`), zero-amount guards, SQLite deletion, and confirmation notifications.
 - [`lib/database/db_helper.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/database/db_helper.dart): Added `getLastTransactions(count)`, `deleteLastTransactions(count)`, and `deleteZeroOrNegativeTransactions()`.
 - [`lib/services/api_service.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/services/api_service.dart): Added `deleteLastTransactions(count, sheetName)` and `deleteExpenseByDate(date, sheetName)`.
 - [`lib/screens/transactions_log_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/transactions_log_screen.dart): Added swipe-to-delete Dismissible gesture, long-press deletion dialog, trash action icon, and auto-purge of invalid zero-amount records on load.
 - [`lib/screens/notification_settings_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/notification_settings_screen.dart): Added Google Assistant & Deep Links management card, live deep link viewer (`https://manikutti.vercel.app/voice-dialog`), and 1-tap "Sync Shortcuts" bridge to `ShortcutManagerCompat`.
-- [`lib/services/widget_data_service.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/services/widget_data_service.dart): Aggregates monthly expense total and scans pending/overdue recharges and bills, pushing updates to `HomeWidget`.
 - [`lib/widgets/spiral_voice_waves.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/widgets/spiral_voice_waves.dart): CustomPainter acoustic wave visualizer featuring the Manikutti logo emblem at the center with 4 rotating holographic spiral arms and expanding ripple rings.
 - [`lib/widgets/voice_dialog_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/widgets/voice_dialog_screen.dart): Translucent floating dialog overlay with `MethodChannel('com.abhilash.manikutti/voice_dialog')` listener handling warm `onNewIntent` query events and rendering create/delete confirmations.
 - [`lib/widgets/voice_logging_sheet.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/widgets/voice_logging_sheet.dart): In-app bottom sheet UI with speech recognition, language toggle (Malayalam / English), animated pulsing mic, and structured create/delete transaction cards.
@@ -32,42 +49,49 @@ This module provides fast, zero-friction expense logging and financial awareness
 - [`lib/screens/dashboard_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/dashboard_screen.dart): Hosts in-app Voice AI button in AppBar and triggers widget updates on data reload.
 
 ### Android Native Components
-- [`android/app/src/main/kotlin/com/abhilash/manikutti/VoiceDialogActivity.kt`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/android/app/src/main/kotlin/com/abhilash/manikutti/VoiceDialogActivity.kt): Native translucent Activity with `BackgroundMode.transparent`, `getDartEntrypointFunctionName() = "voiceDialogMain"`, `singleInstance` task isolation, and `onNewIntent(intent: Intent)` warm event bridge.
-- [`android/app/src/main/kotlin/com/abhilash/manikutti/ShortcutHelper.kt`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/android/app/src/main/kotlin/com/abhilash/manikutti/ShortcutHelper.kt): Registers dynamic shortcuts to `ShortcutManagerCompat` using `androidx.core:core-google-shortcuts` with `OPEN_APP_FEATURE` and `CREATE_ITEM` capability bindings for Google Assistant discovery.
-- [`android/app/src/main/kotlin/com/abhilash/manikutti/MainActivity.kt`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/android/app/src/main/kotlin/com/abhilash/manikutti/MainActivity.kt): Initializes dynamic shortcuts on boot and exposes `publishShortcuts` to Flutter.
+- [`android/app/src/main/kotlin/com/abhilash/manikutti/ManikuttiQuickLogWidgetProvider.kt`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/android/app/src/main/kotlin/com/abhilash/manikutti/ManikuttiQuickLogWidgetProvider.kt): Interactive `AppWidgetProvider` handling keypad digit accumulation, presets, backspace, clear, category cycling, direct SQLite `manikutti.db` inserts, heads-up notification posting, and widget updates.
 - [`android/app/src/main/kotlin/com/abhilash/manikutti/ManikuttiHomeWidgetProvider.kt`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/android/app/src/main/kotlin/com/abhilash/manikutti/ManikuttiHomeWidgetProvider.kt): Native `AppWidgetProvider` updating RemoteViews and binding `widget_btn_mic` with an explicit `PendingIntent` (requestCode 100).
-- [`android/app/src/main/kotlin/com/abhilash/manikutti/ManikuttiVoiceTileService.kt`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/android/app/src/main/kotlin/com/abhilash/manikutti/ManikuttiVoiceTileService.kt): Android `TileService` for Notification Shade quick toggle launching `VoiceDialogActivity`.
-- [`android/app/src/main/res/layout/widget_layout.xml`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/android/app/src/main/res/layout/widget_layout.xml): Home screen widget layout.
-- [`android/app/src/main/res/xml/shortcuts.xml`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/android/app/src/main/res/xml/shortcuts.xml): Google Assistant App Actions (`OPEN_APP_FEATURE`, `CREATE_ITEM`) & app launcher shortcuts routing to `https://manikutti.vercel.app/voice-dialog`.
-- [`android/app/src/main/res/values/arrays.xml`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/android/app/src/main/res/values/arrays.xml): Feature synonyms for Assistant voice routing in Malayalam and English.
-- [`android/app/src/main/res/xml/manikutti_widget_info.xml`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/android/app/src/main/res/xml/manikutti_widget_info.xml): AppWidget provider metadata.
-- [`android/app/src/main/res/values/styles.xml`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/android/app/src/main/res/values/styles.xml) & `values-night/styles.xml`: Declares `TransparentTheme` (`Theme.Translucent.NoTitleBar`) with dim amount.
+- [`android/app/src/main/kotlin/com/abhilash/manikutti/NotificationChannelHelper.kt`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/android/app/src/main/kotlin/com/abhilash/manikutti/NotificationChannelHelper.kt): Declares system notification channels including `voice_expense_channel_v2` with `IMPORTANCE_HIGH`, sound, and vibration.
+- [`android/app/src/main/kotlin/com/abhilash/manikutti/VoiceDialogActivity.kt`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/android/app/src/main/kotlin/com/abhilash/manikutti/VoiceDialogActivity.kt): Native translucent Activity with `BackgroundMode.transparent`, `getDartEntrypointFunctionName() = "voiceDialogMain"`, `singleInstance` task isolation, and `onNewIntent(intent: Intent)` warm event bridge.
+- [`android/app/src/main/kotlin/com/abhilash/manikutti/ShortcutHelper.kt`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/android/app/src/main/kotlin/com/abhilash/manikutti/ShortcutHelper.kt): Registers dynamic shortcuts to `ShortcutManagerCompat` using `androidx.core:core-google-shortcuts`.
+- [`android/app/src/main/kotlin/com/abhilash/manikutti/MainActivity.kt`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/android/app/src/main/kotlin/com/abhilash/manikutti/MainActivity.kt): Initializes dynamic shortcuts on boot and exposes `publishShortcuts` to Flutter.
+- [`android/app/src/main/res/layout/quick_log_widget_layout.xml`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/android/app/src/main/res/layout/quick_log_widget_layout.xml): Interactive keypad widget layout containing digital display, category selector, 4x3 numpad, presets, and save button.
+- [`android/app/src/main/res/xml/manikutti_quick_log_widget_info.xml`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/android/app/src/main/res/xml/manikutti_quick_log_widget_info.xml): AppWidget provider metadata for the Quick Keypad widget.
+- [`android/app/src/main/res/layout/widget_layout.xml`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/android/app/src/main/res/layout/widget_layout.xml): Summary home screen widget layout.
 
 ---
 
 ## 3. Data Flow & Mechanics
 
-1. **Floating Home Screen Overlay (Option B)**:
+1. **Interactive Home Screen Keypad Input Flow**:
+   - **Keypad Taps**: Tapping digits `1-9`, `0`, or presets `+50`, `+100`, `+500` triggers explicit `BroadcastReceiver` intents (`ACTION_KEYPAD_DIGIT`, `ACTION_KEYPAD_PRESET`).
+   - **Instant Rendering**: `ManikuttiQuickLogWidgetProvider` updates the `quick_log_display` TextView in `< 10ms` natively without launching any activity or spinning up the Dart engine.
+   - **Category Selection**: Tapping category chips updates the active category and highlights the chip (`widget_cat_chip_active_bg`). Tapping `More ▾` cycles through custom categories configured in `CategoryPreferencesScreen`.
+   - **1-Tap Save Action (`ACTION_SAVE_EXPENSE`)**:
+     1. Validates that `amount > 0`.
+     2. Extracts user email and family code from `FlutterSharedPreferences`.
+     3. Inserts transaction directly into `manikutti.db` (`transactions` table) with `.toUtc().toIso8601String()` ISO 8601 UTC timestamp and `synced = 0`.
+     4. Posts an instant heads-up system notification via `voice_expense_channel_v2`: 🔔 *"Manikutti: Expense Saved - Saved ₹150 for Food (Home Widget)"* with sound and vibration.
+     5. Recalculates month's total expense directly from SQLite and updates `total_expense`.
+     6. Flashes `"Saved ₹150 for Food ✓"` status on the widget, resets amount to `₹ 0`, and refreshes both the Quick Log and Summary widgets.
+     7. When internet is active, Flutter's background worker or sync engine pushes unsynced records to Google Sheets.
+
+2. **Category Customization Flow**:
+   - Users navigate to **Settings $\rightarrow$ Expense Categories**.
+   - Can add custom categories (e.g. *Gym, Snacks, Books*) or delete custom categories.
+   - Any additions or removals automatically trigger `CategoryService.syncToWidget()`, updating `widget_categories` in widget SharedPreferences and refreshing the on-widget category selector.
+
+3. **Floating Home Screen Overlay (Option B)**:
    - Tapping the mic on the **Home Screen Widget** or **Quick Settings Tile** launches `VoiceDialogActivity` directly via explicit `PendingIntent`.
    - `VoiceDialogActivity` runs in an isolated task stack (`android:taskAffinity="com.abhilash.manikutti.voice"`, `launchMode="singleInstance"`) and boots dedicated entrypoint `voiceDialogMain`.
    - The user stays on their home screen wallpaper without opening `MainActivity` or triggering `AppLockScreen`.
    - A floating frosted-glass card pops up with the animated spiral acoustic wave visualizer and live speech transcription.
-2. **Google Assistant Hands-Free Execution & Next.js Deep Links**:
+
+4. **Google Assistant Hands-Free Execution & Next.js Deep Links**:
    - **Verified HTTPS App Link**: `https://manikutti.vercel.app/voice-dialog` with `android:autoVerify="true"` and `assetlinks.json`.
    - **Dynamic Shortcuts**: `ShortcutHelper` pushes `voice_expense` to `ShortcutManagerCompat`, automatically registering it in **Google Assistant Settings $\rightarrow$ Shortcuts**.
-   - **Assistant Routine Integration**: Routines configured with `https://manikutti.vercel.app/voice-dialog` open directly into the overlay without opening the browser.
    - **Warm Launch Support**: If the overlay is already alive, `VoiceDialogActivity.onNewIntent()` relays the incoming query via `com.abhilash.manikutti/voice_dialog` without dropping intents.
-3. **Intent Classification & Entity Extraction**:
-   - Transcript sent to `/api/ai/voice-expense`.
-   - Gemini classifies intent as `action: "create"` or `action: "delete"`.
-   - **For "create"**: Extracts `{ amount (> 0), category, note, type, bankAccount }`. If amount is missing or <= 0, the system prompts the user and rejects saving bogus ₹0 records.
-   - **For "delete"**: Extracts transaction count `count` (1 to 10) from phrases like *"delete last 2 transactions"*, *"undo last expense"*, *"avasaana transaction delete aakku"*, or *"അവസാനത്തെ രണ്ട് ട്രാൻസാക്ഷൻ ഒഴിവാക്കുക"*.
-   - If offline, `VoiceExpenseService.parseLocally` provides instantaneous rule-based extraction supporting Malayalam and English numbers and commands.
-4. **Storage & Normalization**:
-   - **Creation**: Recorded into local SQLite `transactions` table with `.toUtc().toIso8601String()` timestamp and `synced = 0`. If `key_voice_notifications_enabled` is active in `NotificationSettingsScreen`, fires an immediate system notification via dedicated `voice_expense_channel_v2` with crisp vector microphone icon `ic_tile_mic` (max importance, sound, vibration, heads-up shade alert): 🔔 *"Manikutti: Expense Saved - Saved ₹100 for Petrol (Fuel)"* or *"Manikutti: Income Recorded - Recorded +₹100 for Received from Ajesh (Income)"*. Guaranteed to post via `await` before overlay dismissal.
-   - **Deletion**: Deletes the last N records from SQLite, deletes synced records from Google Sheets via `DELETE /api/sheets/expense?action=delete_last&count=N`, purges any stray ₹0 records, updates the widget, and notifies: 🔔 *"Manikutti: Transaction Deleted - Deleted last 2 transactions"*.
-   - **Manual Cleanup**: In `TransactionsLogScreen`, users can swipe left to delete, long-press to delete, or tap the delete icon on any transaction, and any ₹0 entries are automatically cleaned up on load.
-   - Automatically closes the floating dialog (returning the user to where they were).
-   - Triggers `WidgetDataService.updateWidgetData()` to refresh the widget numbers immediately.
-   - Fire-and-forget sync to Google Sheets via `SyncService.instance.syncData()`.
 
+5. **Storage & Normalization**:
+   - **Creation**: Recorded into local SQLite `transactions` table with `.toUtc().toIso8601String()` timestamp and `synced = 0`. Instant system notification fired via `voice_expense_channel_v2`.
+   - **Deletion**: Deletes the last N records from SQLite, deletes synced records from Google Sheets via `DELETE /api/sheets/expense?action=delete_last&count=N`, purges any stray ₹0 records, updates the widget, and notifies.
