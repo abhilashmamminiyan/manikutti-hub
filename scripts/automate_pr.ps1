@@ -78,6 +78,16 @@ if (-not $env:GH_TOKEN) {
     }
 }
 
+if (-not $env:GH_TOKEN) {
+    try {
+        $tok = (gh auth token 2>$null)
+        if ($tok -and $tok.Trim().Length -gt 10) {
+            $env:GH_TOKEN = $tok.Trim()
+            Write-Host "[INFO] Injected GitHub PAT from system keyring." -ForegroundColor Gray
+        }
+    } catch {}
+}
+
 # 1. Resolve Target Directory
 $WorkspaceRoot = "d:\MERN\Personal\my-apps\finance-tracker"
 if (Test-Path "$WorkspaceRoot\.gh") {
