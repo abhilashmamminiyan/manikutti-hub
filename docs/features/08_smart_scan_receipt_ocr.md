@@ -7,18 +7,27 @@ Smart Scan streamlines expense logging by eliminating manual keyboard typing. Us
 
 ## 2. Source Files & Implementation Matrix
 
-### Mobile Client (`manikutti_mobile`)
+### Web API (`Manikutti`)
+- [`src/app/api/ai/extract-screenshot/route.ts`](file:///d:/MERN/Personal/my-apps/finance-tracker/Manikutti/src/app/api/ai/extract-screenshot/route.ts):
+  - Checks Admin `aiEnabled` master flag and user's `ai_screenshot_extraction` permission via Firestore / `Roles_Permissions`.
+  - Runs free-tier `gemini-2.5-flash-lite` (fallback `gemini-2.5-flash`) with OCR text first; accepts compressed base64 image only if OCR text is sparse; returns deterministic local extraction fallback if Gemini quota/key is unavailable.
+
+### Mobile Client & Android Native (`manikutti_mobile`)
+- [`android/app/src/main/kotlin/com/abhilash/manikutti/MainActivity.kt`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/android/app/src/main/kotlin/com/abhilash/manikutti/MainActivity.kt), `AndroidManifest.xml`, and `res/xml/file_paths.xml`:
+  - Declares `ACTION_SEND` (`image/*`) intent filter to receive payment screenshots shared directly from GPay/PhonePe/Paytm/Gallery (cold start and `onNewIntent`).
+  - Copies `content://` streams to app cache and delivers paths via MethodChannel `com.abhilash.manikutti/share` (`getInitialSharedImage`, `shareImage`).
+  - Uses `FileProvider` + WhatsApp `<queries>` (`com.whatsapp`, `com.whatsapp.w4b`) to forward receipts back to WhatsApp after logging.
+- [`lib/services/screenshot_extractor_service.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/services/screenshot_extractor_service.dart):
+  - **Stage 1 (0 cost)**: On-device ML Kit `TextRecognizer`.
+  - **Stage 2 (Gated by `ai_screenshot_extraction`)**: Calls `/api/ai/extract-screenshot` with OCR text (or image only if `< 18` chars / `amount <= 0`).
+  - **Stage 3 (Offline deterministic fallback)**: `extractLocally()` Indian UPI/bank regex + merchant category dictionary while skipping 12-digit UTR/reference numbers.
+- [`lib/screens/share_expense_sheet.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/share_expense_sheet.dart):
+  - Pre-filled confirmation sheet triggered by OS Share intent or `ScreenshotsScreen`.
+  - Supports **Log & Notify** (saves to SQLite in UTC `.toUtc().toIso8601String()`, fires local notification & triggers `SyncService` -> FCM push when Family is toggled) and **Log & WhatsApp** (logs and opens WhatsApp forward sheet).
 - [`lib/screens/smart_scan_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/smart_scan_screen.dart):
-  - Camera / Gallery image picker using `image_picker`.
-  - ML Kit Text Recognizer initialization:
-    ```dart
-    final textRecognizer = TextRecognizer(script: TextRecognitionScript.latin);
-    final RecognizedText recognizedText = await textRecognizer.processImage(inputImage);
-    ```
-  - RegEx extraction algorithms for Indian UPI apps (Google Pay, PhonePe, Paytm).
-  - Previews extracted amount and offers "Create Expense" button.
+  - Camera / Gallery image picker using `image_picker` with on-device ML Kit OCR.
 - [`lib/screens/screenshots_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/screenshots_screen.dart):
-  - Screenshot management view for bulk processing recent payment receipt screenshots.
+  - Gallery/Camera payment screenshot scanner with session history launching `ShareExpenseSheet`.
 - Native Plugins Used:
   - `google_mlkit_text_recognition`: On-device Latin script OCR.
   - `image_picker`: Device camera and gallery interface.

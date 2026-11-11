@@ -15,27 +15,36 @@ Family Shared Finance allows members of a household to pool and track collective
   - `ExpensesTab.tsx`: Detailed filtered family expenses.
   - `LedgerTab.tsx`: Balance sheet.
   - `MembersTab.tsx`: List of registered members, invitation generator, role assignment.
+  - `RolesTab.tsx`: Custom role manager (presets `Admin`, `Partner`, `Member`, `Basic` + custom roles), 18-key mobile UI feature toggle editor, member role switcher, and the **Global AI Master Switch** (`aiEnabled`).
   - `RechargesTab.tsx`: Overview of family mobile plan recharges.
-  - `AdminDialogs.tsx`: Modals for adding family members and sending invite emails.
+  - `AdminDialogs.tsx`: Modals for adding/editing family members, creating custom roles, and sending invite emails with pre-assigned role selection.
+- [`src/lib/featurePermissions.ts`](file:///d:/MERN/Personal/my-apps/finance-tracker/Manikutti/src/lib/featurePermissions.ts): Canonical 18-key mobile feature permission registry, default role presets, Firestore (`users/{email}`, `families/{familyCode}`) sync with `Roles_Permissions` Google Sheet fallback, and effective permission resolver enforcing the Global AI toggle.
 - [`src/screens/FamilySetupScreen.tsx`](file:///d:/MERN/Personal/my-apps/finance-tracker/Manikutti/src/screens/FamilySetupScreen.tsx): Initial wizard to name a family and initialize the shared sheet.
 - [`src/app/join-family/page.tsx`](file:///d:/MERN/Personal/my-apps/finance-tracker/Manikutti/src/app/join-family/page.tsx): Landing page for accepting an invite via 6-digit family code.
 - Backend API Routes:
-  - `/api/sheets/family/route.ts`: CRUD for family shared transactions.
+  - `/api/sheets/family/route.ts`: CRUD for family shared transactions, invites (`roleName`), and role/permission payload hydration.
+  - `/api/sheets/roles/route.ts`: Admin-protected CRUD for custom roles, Global AI toggle (`toggleAi`), and member role assignment (`assignMemberRole`).
   - `/api/sheets/admin/route.ts` & `/api/sheets/admin/stats/route.ts`: Admin analytics and member queries.
   - `/api/sheets/groups/route.ts`: Family group info, codes, and registry.
   - `/api/sheets/init/route.ts`: Initializes required tabs on the family spreadsheet.
 
 ### Mobile Client (`manikutti_mobile`)
-- [`lib/screens/dashboard_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/dashboard_screen.dart): Tab/filter to switch between "Personal" and "Family" view.
-- [`lib/screens/add_transaction_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/add_transaction_screen.dart): "Family" toggle button that attaches `familyCode` to the transaction.
-- [`lib/services/api_service.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/services/api_service.dart): `getFamilyInfo()`, `getCachedFamilyCode()`, and `joinFamily(code)`.
+- [`lib/services/feature_flag_service.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/services/feature_flag_service.dart): Offline-first `SharedPreferences` + `ValueNotifier` controller for the 18 role feature flags and Global AI override.
+- [`lib/screens/dashboard_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/dashboard_screen.dart): Dynamically gates Family card, Bank Balances, Quick Access tiles, charts, dues, loans/EMI, Salary UI, and AI features; fixes member self-salary editing fallback (`_userEmail` when `_familyMembers` is empty, Admin-only member dropdown).
+- [`lib/widgets/app_drawer.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/widgets/app_drawer.dart) & [`lib/widgets/sidebar_icon_rail.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/widgets/sidebar_icon_rail.dart): Reactive role-based navigation hiding disabled modules.
+- [`lib/screens/add_transaction_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/add_transaction_screen.dart) & [`lib/screens/transactions_log_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/transactions_log_screen.dart): Gates `Family` transaction mode when `family_ledger` is disabled.
+- [`lib/services/api_service.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/services/api_service.dart): `getFamilyInfo()` (hydrates `FeatureFlagService`), `getCachedFamilyCode()`, and `joinFamily(code)`.
 
-### Central Database (Google Sheets)
+### Central Database (Google Sheets & Cloud Firestore)
+- **Cloud Firestore** (`src/lib/firebaseAdmin.ts`):
+  - `users/{email}`: Fast lookup for `{ googleDriveId, familyCode, roleName, fcmTokens }`.
+  - `families/{familyCode}`: `{ aiEnabled, roles: { [roleName]: permissionsMap } }`.
 - **Spreadsheet**: `FAMILY_SPREADSHEET_ID`
 - **Tabs**:
   - `Family_Expenses`: `[Date, Amount, Category, Note, AddedBy, FamilyCode]`
   - `Family_Members`: `[Family Code, User Email, Role (Admin/Member), Joined Date, Nickname, Base Salary, Current Salary]` *(Backward compatible with legacy 6-column sheets where Col F was Monthly Income)*
-  - `Invitations`: `[InviteCode, FamilyName, CreatedBy, ExpiryDate, Status]`
+  - `Invitations`: `[InviteCode, FamilyName, CreatedBy, ExpiryDate, Status, FamilyCode, RoleName]`
+  - `Roles_Permissions`: `[RoleName, PermissionsJSON, UpdatedAt]` (including `__AI_CONFIG__` master toggle row fallback)
 
 ---
 
