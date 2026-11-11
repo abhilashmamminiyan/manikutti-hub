@@ -16,11 +16,11 @@ flowchart TD
     A --> D["Phase 3: Wealth & Settlements"]
 
     B --> B1["Android SMS / UPI Auto-Detection"]
-    B --> B3["Multimodal Receipt Scan (Gemini Vision)"]
+    B --> B3["Multimodal Receipt Scan & Share-to-Log (✅ Gemini Flash Lite Stage-2 Completed)"]
     B --> B4["Bank Statement Upload & Deduplication (✅ Completed)"]
 
     C --> C1["Predictive Cashflow & Budget Caps"]
-    C --> C2["Proactive Anomaly Alerts (FCM Push)"]
+    C --> C2["Proactive Anomaly Alerts (✅ FCM Push Infrastructure Completed)"]
     C --> C3["Conversational Financial Assistant Chat"]
 
     D --> D1["Splitwise-Style Group Expense Settlements"]
@@ -68,7 +68,8 @@ flowchart TD
 
 ---
 
-### 3. 🖼️ Multimodal Receipt & Invoice Scanning with Gemini Vision
+### 3. 🖼️ Multimodal Receipt & Invoice Scanning with Gemini Vision (⚠️ Partial — Payment Screenshots Completed)
+- **Sprint 1 Progress**: Payment screenshot Share-to-Log extraction (`ShareExpenseSheet`, `ScreenshotsScreen`, `ScreenshotExtractorService`, and `/api/ai/extract-screenshot` using `gemini-2.5-flash-lite`) is live and gated by Admin AI toggle. Full multi-item grocery/retail receipt line-item parsing on `SmartScanScreen` remains future work.
 - **Description**: Upgrade the current regex-based Google ML Kit text recognition (`smart_scan_screen.dart`) to multimodal Gemini Vision AI. Able to parse handwritten store receipts, restaurant bills with itemized taxes, and complex electricity bills.
 - **Components**:
   - Endpoint: `Manikutti/src/app/api/ai/scan-receipt/route.ts`.

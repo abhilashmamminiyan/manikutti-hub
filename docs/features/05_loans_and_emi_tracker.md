@@ -46,7 +46,11 @@ The Loans and EMI Tracker gives families complete visibility into outstanding li
 3. **Constant Family EMI Dues Aggregation**:
    - The system computes the family's fixed, non-negotiable monthly EMI obligations by combining:
      - All active loans from `Loans` (`status: Active`) summing `monthlyEMI`.
-     - Standalone recurring EMI commitments registered in `Monthly_Expenses` (e.g. store finances, unlinked vehicle loans), automatically deduplicated against active loans by name to prevent double-counting.
+     - Standalone recurring EMI commitments registered in `Monthly_Expenses` whose category is `EMI` or whose title includes `emi` or `loan`, automatically deduplicated against active loans by name to prevent double-counting.
+   - **Independent Fault-Tolerant Dashboard Fetching**:
+     - `/api/sheets/monthly/route.ts` reads `Monthly_Expenses!A:J`.
+     - Mobile `DashboardScreen._fetchFamilyDuesAndNotifications()` fetches `fetchMonthlyExpenses`, `fetchNotifications`, `fetchLoansData`, `fetchEmiBills`, and `fetchHomeLoanHistory` in independent `try/catch` blocks so a partial failure never prevents Home Loan or Loans/EMI cards from rendering.
+   - **Role Feature Gating**: `FamilyLoanEmiSection` hides the Home Loan card or EMI cards individually based on `FeatureKeys.homeLoan` and `FeatureKeys.loansEmiLedger`.
    - **Dashboard Integration**:
      - **Web Admin Dashboard** (`OverviewTab.tsx`): Prominently surfaced as a dedicated KPI card `Constant EMI Dues` with a `Fixed` badge.
      - **Web Family Dashboard** (`FamilyDashboard.tsx`): Displayed as a primary overview metric alongside monthly spend.

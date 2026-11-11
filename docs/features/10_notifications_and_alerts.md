@@ -17,33 +17,27 @@ Timely notifications keep family members informed about critical financial miles
 - [`lib/screens/settings_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/settings_screen.dart):
   - Houses the top-level `Notifications` preference tile routing to `NotificationSettingsScreen`.
 - [`lib/services/notification_service.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/services/notification_service.dart):
-  - Wraps `flutter_local_notifications` with dedicated vector small icon `ic_notification` (`drawable/ic_notification.xml`) and voice icon `ic_tile_mic` (`drawable/ic_tile_mic.xml`).
-  - Android notification channel configuration:
-    - ID: `voice_expense_channel_v2` (Voice & Widget Expenses, `Importance.max`, `Priority.high`, `playSound: true`, `enableVibration: true`, `showBadge: true`).
-    - ID: `payment_channel` (Payment Notifications).
-    - ID: `salary_channel` (Salary Reminders).
-    - ID: `recharge_channel` (Mobile Recharge Reminders).
-    - ID: `utility_channel` (Utility Reminders).
-  - Methods: `initialize()`, `areNotificationsEnabled()`, `openSystemNotificationSettings()`, `showImmediateNotification()`, `sendTestNotification()`, `scheduleMonthlyReminder()`, etc.
+  - Wraps `flutter_local_notifications` and **Firebase Cloud Messaging (`firebase_messaging` + `firebase_core`)** with dedicated vector small icon `ic_notification` (`drawable/ic_notification.xml`) and voice icon `ic_tile_mic` (`drawable/ic_tile_mic.xml`).
+  - Methods: `initialize()`, `initializeFirebasePush()`, `syncFcmTokenWithServer()`, `areNotificationsEnabled()`, `openSystemNotificationSettings()`, `showImmediateNotification()`, `sendTestNotification()`, `scheduleMonthlyReminder()`.
 - [`lib/services/voice_expense_service.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/services/voice_expense_service.dart):
   - Checks user toggle `key_voice_notifications_enabled` before posting immediate confirmation notification to `voice_expense_channel_v2` with `ic_tile_mic`.
 - [`android/app/src/main/kotlin/com/abhilash/manikutti/MainActivity.kt`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/android/app/src/main/kotlin/com/abhilash/manikutti/MainActivity.kt) & [`VoiceDialogActivity.kt`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/android/app/src/main/kotlin/com/abhilash/manikutti/VoiceDialogActivity.kt):
   - Implements MethodChannel `com.abhilash.manikutti/settings` launching `Settings.ACTION_APP_NOTIFICATION_SETTINGS`.
 - [`lib/main.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/main.dart):
-  - Workmanager background execution callback:
-    ```dart
-    @pragma('vm:entry-point')
-    void callbackDispatcher() {
-      Workmanager().executeTask((task, inputData) async { ... });
-    }
-    ```
-  - Periodically checks API for remote notifications and checks local recharge/utility tables.
+  - Initializes Firebase (`Firebase.initializeApp()`), registers `FirebaseMessaging.onBackgroundMessage`, initializes `FeatureFlagService`, and runs Workmanager background execution callback (`@pragma('vm:entry-point') callbackDispatcher`) as an offline-resilient polling backup.
 - [`lib/services/api_service.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/services/api_service.dart):
+  - `registerFcmToken(token)`: Persists device FCM token to Firestore via backend.
   - `fetchNotifications(familyCode)`: Retrieves latest family alerts.
 
-### Backend API & Google Sheets (`Manikutti`)
+### Backend API & Firebase (`Manikutti`)
+- [`src/lib/firebaseAdmin.ts`](file:///d:/MERN/Personal/my-apps/finance-tracker/Manikutti/src/lib/firebaseAdmin.ts):
+  - Modular `firebase-admin` v14 initialization (`FIREBASE_SERVICE_ACCOUNT`) providing Cloud Firestore & FCM `sendFcmToUsers()` multicast helper with automatic stale token pruning.
+- [`src/app/api/notifications/register-token/route.ts`](file:///d:/MERN/Personal/my-apps/finance-tracker/Manikutti/src/app/api/notifications/register-token/route.ts):
+  - Authenticated `POST` saving device FCM token to Firestore `users/{email}.fcmTokens`.
 - `/api/sheets/notifications/route.ts`:
-  - GET/POST notifications for a family.
+  - GET/POST notifications for a family; triggers FCM push alerts to targeted or all family members.
+- `/api/sheets/expense/route.ts`:
+  - Triggers instant FCM multicast pushes to fellow family members whenever a shared `Family_Expenses` transaction is posted.
 - **Google Sheets Tab**: `Notifications` in `FAMILY_SPREADSHEET_ID`
   - Columns: `[NotificationID, Title, Message, Date, TargetUserEmail, ReadStatus]`
 
