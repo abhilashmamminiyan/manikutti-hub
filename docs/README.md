@@ -32,3 +32,14 @@ Welcome to the comprehensive documentation directory for **Manikutti Hub**, an e
 
 - **For Human Developers**:
   Read each feature document to understand the underlying Google Sheets tables, Next.js serverless handlers, Flutter client-side state, and edge cases. Check [`UPGRADE_ROADMAP.md`](UPGRADE_ROADMAP.md) when planning future sprints.
+
+---
+
+## 📦 Mobile Release Build & APK Size Optimization
+
+- **Android Toolchain**: Uses AGP `9.1.1`, Gradle `9.3.1`, JDK `17`, and Flutter `stable` (`manikutti_mobile/.github/workflows/pipeline.yml`).
+- **APK Size Reduction (`manikutti_mobile/android/app/build.gradle.kts` & `pipeline.yml`)**:
+  - R8 code shrinking (`isMinifyEnabled = true`) + resource shrinking (`isShrinkResources = true`) with ProGuard rules (`android/app/proguard-rules.pro`).
+  - Locale resource trimming via `androidResources { localeFilters.addAll(listOf("en", "ml")) }`.
+  - Native library `.so` compression inside distributed APKs (`packaging { jniLibs { useLegacyPackaging = true } }`) plus `META-INF` / debug probe exclusions.
+  - Per-ABI ARM builds (`--split-per-abi --target-platform android-arm64,android-arm --obfuscate --split-debug-info`) — Firebase App Distribution deploys `app-arm64-v8a-release.apk`, while GitHub Artifacts retain both `arm64-v8a` and `armeabi-v7a` APKs.
