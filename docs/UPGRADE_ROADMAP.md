@@ -22,7 +22,7 @@ flowchart TD
     C --> C1["Predictive Cashflow & Budget Caps"]
     C --> C2["Proactive Anomaly Alerts (✅ FCM Push Infrastructure Completed)"]
     C --> C3["Conversational Financial Assistant Chat"]
-    C --> C4["Live Error Telemetry & Firebase Crashlytics (⏳ Pending Sprint)"]
+    C --> C4["Live Error Telemetry & Firebase Crashlytics (✅ AI-First Crashlytics + Admin Diagnostics Completed)"]
 
     D --> D1["Splitwise-Style Group Expense Settlements"]
     D --> D2["Net Worth & Investments (Gold, FD, Mutual Funds)"]
@@ -132,7 +132,8 @@ flowchart TD
 
 ---
 
-### 8. 📊 Live Error, API Failure Telemetry & Firebase Crashlytics (Free Spark Plan) — ⏳ Pending Sprint
+### 8. 📊 Live Error, API Failure Telemetry & Firebase Crashlytics (Free Spark Plan) — ✅ Completed (AI-First)
+- **Status**: Implemented with `firebase_crashlytics`, `CrashReportingService` (`_TelemetryHttpClient` + `FlutterError.onError` + `PlatformDispatcher.instance.onError`), `/api/telemetry/errors` (`Error_Logs` sheet in `ADMIN_SPREADSHEET_ID`), Admin Console `DiagnosticsTab` (`Error & Crash Logs`), and `scripts/read_crashes.mjs` (`firebase mcp --only crashlytics` + `adb logcat`).
 - **Description**: Real-time visibility into mobile screen crashes, non-fatal Flutter exceptions, and backend/Google Sheets API failures without needing paid monitoring tools. Combines an in-house Firestore telemetry pipeline viewed live in the Web Admin Console with native Firebase Crashlytics symbolicated crash reporting.
 - **Proposed Architecture (Option 2: Firestore `error_logs` + Admin Diagnostics Tab + Option 1/3 Crashlytics)**:
   1. **Firestore `error_logs` Collection (Free Spark Tier: 20k writes/day, 50k reads/day)**:
