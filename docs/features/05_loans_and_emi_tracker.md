@@ -14,9 +14,13 @@ The Loans and EMI Tracker gives families complete visibility into outstanding li
   - `/api/sheets/emi/route.ts`: General EMI registry.
   - `/api/sheets/loans/route.ts`: Loans overview and status tracking.
   - `/api/sheets/home-loan/route.ts`: Home Loan amortizations, disbursements, and prepayment ledger.
+  - `/api/sheets/monthly/route.ts`: Tracks `Total Months` (`K`) and `Paid Months` (`L`) tenure on loan/EMI rows in `Monthly_Expenses!A:L` and supports atomic 1-tap `Paid` + `Family_Expenses` logging (`logToFamily`).
+  - `/api/sheets/transfers/route.ts`: Tracks inter-member monthly pool transfers (e.g., `Ajesh -> Nisha ₹3,750`, `Abhilash -> Nisha ₹12,500`).
 
 ### Mobile Client (`manikutti_mobile`)
-- [`lib/screens/dashboard_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/dashboard_screen.dart): Hosts the integrated Family Loans & EMI Ledger directly on the main dashboard screen.
+- [`lib/screens/dashboard_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/dashboard_screen.dart): Hosts the integrated Family Loans & EMI Ledger directly on the main dashboard screen and schedules local "Have you paid?" reminders for unpaid assigned loans.
+- [`lib/screens/simple_family_home_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/simple_family_home_screen.dart): Clean Basic-member home screen listing assigned monthly EMIs with 1-tap Paid button, member attribution, and tenure progress.
+- [`lib/widgets/family_pool_transfers_card.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/widgets/family_pool_transfers_card.dart): ₹12,500 monthly equal-share breakdown and inter-member transfer history (`Family_Transfers`).
 - [`lib/widgets/family_loan_emi_card.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/widgets/family_loan_emi_card.dart): Modern loan and EMI tracker widget displaying installment count progress bars, monthly payment amounts, principal paid, interest paid, and balance to be paid for both Home Loan and active consumer EMIs.
 - [`lib/screens/loans_emi_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/loans_emi_screen.dart): Dedicated loans dashboard displaying active liabilities and monthly obligations.
 - [`lib/screens/home_loan_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/home_loan_screen.dart): Dedicated Home Loan tracking with principal paid vs. outstanding metrics.

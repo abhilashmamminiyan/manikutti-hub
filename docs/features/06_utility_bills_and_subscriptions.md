@@ -24,7 +24,7 @@ The Utility Bills and Subscriptions module tracks recurring domestic expenditure
 
 ### Google Sheets Storage
 - **Personal Sheet**: `Personal_Utilities` (`[UtilityName, Category, AverageAmount, DueDayOfMonth, Frequency, LastPaidDate, AutoLogExpense]`)
-- **Family Sheet**: `Monthly_Expenses` (`[BillName, ExpectedAmount, ActualPaid, DueDate, PaidBy, Status]`)
+- **Family Sheet**: `Monthly_Expenses` (`[BillName, ExpectedAmount, ActualPaid, DueDate, PaidBy, Status, Category, LastPaidDate, AssignedTo, FamilyCode, TotalMonths, PaidMonths]`) in range `A:L`
 
 ---
 

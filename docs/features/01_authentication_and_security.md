@@ -17,6 +17,7 @@ The Manikutti ecosystem provides secure, stateless authentication designed for p
 - Serverless API Routes:
   - `/api/auth/[...nextauth]/route.ts`: NextAuth API handler.
   - `/api/auth/otp/route.ts`: Generates 6-digit cryptographic OTP, sets 10-minute expiry, sends via email.
+  - `/api/auth/member-code/route.ts`: Password/Access-Code login (`POST`) for family members (no Email OTP needed) and Admin-protected `GET`/`PUT` to add members, generate/regenerate/set custom codes, share WhatsApp deep links (`manikutti://join?code=...` / `/join-family?code=...`), or revoke codes (`tokenVersion` invalidation checked in `authHelper.ts`).
 
 ### Mobile Client (`manikutti_mobile`)
 - [`lib/screens/login_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/login_screen.dart): Flutter OTP login screen, countdown timer, resend button.
