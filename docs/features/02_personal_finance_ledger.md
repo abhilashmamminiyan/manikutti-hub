@@ -108,3 +108,16 @@ The Personal Finance Ledger enables individual users to record, categorize, insp
   1. If you modify columns in `Personal_Expenses`, update both `GoogleSheetsService.ensureSheetsExist` in `Manikutti/src/lib/googleSheets.ts` and `TransactionModel.fromSheetRow` / `toSheetRow`.
   2. Keep SQLite columns in `manikutti_mobile/lib/database/db_helper.dart` in sync; increment database version if altering tables.
   3. Always test calculating net balance: `Sum(Income) - Sum(Expense)`.
+
+
+---
+
+## 7. Android Bank SMS Auto-Detection & Balance Sync (Added)
+
+- **Native Interception & Parsing (`SmsTransactionReceiver`, `SmsParserHelper`)**:
+  - Listens for `android.provider.Telephony.SMS_RECEIVED` broadcasts (and supports 48h/72h inbox scans via `com.abhilash.manikutti/sms` MethodChannel) when SMS permission is granted and `sms_detection_enabled` is enabled.
+  - Ignores OTPs, promos, and payment requests; parses debit/credit amount, merchant/note, category, bank account (`SBI` / `Canara Bank` / `HDFC` / etc.), available balance (`Avl Bal`), and configured EMI match (`isEmi`).
+- **Confirmation vs. Exact EMI Auto-Log**:
+  1. **Exact EMI Repayment Auto-Log (Zero Confirmation)**: If an incoming or recently scanned debit SMS amount matches any configured EMI repayment amount (`±₹1` tolerance via `SmsParserHelper.matchesConfiguredEmiAmount`), `autoLogIfExactEmi()` logs it directly into `manikutti.db`, sets `emi_sms_confirmed_<YYYY-MM>`, posts an informational alert, and skips Yes/No confirmation.
+  2. **All Other SMS — Notification & Widget Confirmation**: Shows `"Transaction detected — want to log?"` via Notification (`SmsWidgetActionReceiver`), Home Screen Widget (`ManikuttiHomeWidgetProvider`), and `DashboardScreen` banner. Confirming **Yes** inserts into SQLite `manikutti.db` (`transactions` table, UTC timestamp, `synced = 0`) for `Personal_Expenses` sync.
+  - If an available balance was parsed, writes `flutter.sms_latest_balance_<bank>` & `flutter.sms_latest_balance_date_<bank>` so `BankBalanceService.init()` absorbs it automatically as the verified balance.

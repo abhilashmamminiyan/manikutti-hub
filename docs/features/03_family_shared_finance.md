@@ -30,7 +30,8 @@ Family Shared Finance allows members of a household to pool and track collective
 
 ### Mobile Client (`manikutti_mobile`)
 - [`lib/services/feature_flag_service.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/services/feature_flag_service.dart): Offline-first `SharedPreferences` + `ValueNotifier` controller for the 18 role feature flags and Global AI override.
-- [`lib/screens/dashboard_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/dashboard_screen.dart): Dynamically gates Family card, Bank Balances, Quick Access tiles, charts, dues, loans/EMI, Salary UI, and AI features; fixes member self-salary editing fallback (`_userEmail` when `_familyMembers` is empty, Admin-only member dropdown).
+- [`lib/screens/dashboard_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/dashboard_screen.dart): Dynamically gates Family card, Bank Balances, Quick Access tiles, charts, dues, loans/EMI, Salary UI, and AI features; routes `Basic` role members directly to `SimpleFamilyHomeScreen` and surfaces `FamilyPoolTransfersCard` for tracking ₹12,500 monthly shares & inter-member pool transfers.
+- [`lib/screens/simple_family_home_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/simple_family_home_screen.dart) & [`lib/widgets/family_pool_transfers_card.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/widgets/family_pool_transfers_card.dart): Focused family home experience for `Basic` members with *"Have you paid?"* reminders, 1-tap **Paid** logging (`paidBy` + UTC date -> `Family_Expenses`), inter-member pool transfers (`/api/sheets/transfers` -> `Family_Transfers`), and shared family payment history.
 - [`lib/widgets/app_drawer.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/widgets/app_drawer.dart) & [`lib/widgets/sidebar_icon_rail.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/widgets/sidebar_icon_rail.dart): Reactive role-based navigation hiding disabled modules.
 - [`lib/screens/add_transaction_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/add_transaction_screen.dart) & [`lib/screens/transactions_log_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/transactions_log_screen.dart): Gates `Family` transaction mode when `family_ledger` is disabled.
 - [`lib/services/api_service.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/services/api_service.dart): `getFamilyInfo()` (hydrates `FeatureFlagService`), `getCachedFamilyCode()`, and `joinFamily(code)`.
@@ -102,3 +103,16 @@ Family Shared Finance allows members of a household to pool and track collective
   1. Never bypass `checkMembership()` in `Manikutti/src/lib/googleSheets.ts`.
   2. Always ensure the `addedBy` column stores the authenticated user's email, not client-supplied arbitrary text.
   3. Ensure `Family_Expenses` columns in `ensureSheetsExist` match the read ranges in `/api/sheets/family/route.ts`.
+
+
+---
+
+## 7. Family Payment Restriction Contract (EMI & Home Loan Only)
+
+- **Policy**: Manual/ad-hoc Family expenses are disabled across Mobile and Web so `Family_Expenses` strictly tracks **EMI & Home Loan** commitments.
+- **API Enforcement (`Manikutti/src/app/api/sheets/expense/route.ts`)**:
+  - `POST` requests targeting `Family_Expenses` validate categories via `isAllowedFamilyPaymentCategory()` (`EMI`, `Home Loan`, `Home Loan EMI`, `Loan Repayment`, `Loan`, `Mortgage`) and reject non-EMI/Home Loan entries with `403`.
+- **UI & Voice Enforcement**:
+  - Mobile `AddTransactionScreen` hides the `Family` ledger toggle button; `ShareExpenseSheet` limits targets to `Personal` and `Home Loan`.
+  - Mobile `VoiceExpenseService` and Web `/api/ai/voice-expense` no longer auto-route spoken expenses into `Family`.
+  - Web `AddRecordModal` blocks ad-hoc record creation when `pathname === '/family'`.

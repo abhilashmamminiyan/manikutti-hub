@@ -97,3 +97,14 @@ This module provides fast, zero-friction expense logging and financial awareness
 5. **Storage & Normalization**:
    - **Creation**: Recorded into local SQLite `transactions` table with `.toUtc().toIso8601String()` timestamp and `synced = 0`. Instant system notification fired via `voice_expense_channel_v2`.
    - **Deletion**: Deletes the last N records from SQLite, deletes synced records from Google Sheets via `DELETE /api/sheets/expense?action=delete_last&count=N`, purges any stray ₹0 records, updates the widget, and notifies.
+
+
+---
+
+## 6. Home Screen Widget SMS Confirmation Prompt (Added)
+
+- **Widget Prompt UI (`widget_layout.xml`, `ManikuttiHomeWidgetProvider.kt`)**:
+  - Added `widget_sms_prompt_layout` banner inside the main summary home widget showing pending detected SMS details (`₹amount`, merchant, bank, and available balance if present) with **Yes** (`ACTION_SMS_CONFIRM_LOG`) and **No** (`ACTION_SMS_DISMISS`) buttons.
+  - Broadcast actions route to `SmsWidgetActionReceiver`, which logs confirmed entries directly to `manikutti.db` (`transactions` table) via `SmsParserHelper.confirmPendingToPersonal()`, updates `BankBalanceService` native preferences, posts confirmation feedback, and refreshes all app widgets without launching the UI.
+- **Flutter Bridge (`MainActivity.kt`, `SmsDetectionService`)**:
+  - Exposes MethodChannel `com.abhilash.manikutti/sms` (`hasSmsPermission`, `requestSmsPermission`, `scanRecentSms`, `getPendingSms`, `confirmPendingSms`, `dismissPendingSms`).

@@ -14,9 +14,13 @@ The Loans and EMI Tracker gives families complete visibility into outstanding li
   - `/api/sheets/emi/route.ts`: General EMI registry.
   - `/api/sheets/loans/route.ts`: Loans overview and status tracking.
   - `/api/sheets/home-loan/route.ts`: Home Loan amortizations, disbursements, and prepayment ledger.
+  - `/api/sheets/monthly/route.ts`: Tracks `Total Months` (`K`) and `Paid Months` (`L`) tenure on loan/EMI rows in `Monthly_Expenses!A:L` and supports atomic 1-tap `Paid` + `Family_Expenses` logging (`logToFamily`).
+  - `/api/sheets/transfers/route.ts`: Tracks inter-member monthly pool transfers (e.g., `Ajesh -> Nisha ₹3,750`, `Abhilash -> Nisha ₹12,500`).
 
 ### Mobile Client (`manikutti_mobile`)
-- [`lib/screens/dashboard_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/dashboard_screen.dart): Hosts the integrated Family Loans & EMI Ledger directly on the main dashboard screen.
+- [`lib/screens/dashboard_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/dashboard_screen.dart): Hosts the integrated Family Loans & EMI Ledger directly on the main dashboard screen and schedules local "Have you paid?" reminders for unpaid assigned loans.
+- [`lib/screens/simple_family_home_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/simple_family_home_screen.dart): Clean Basic-member home screen listing assigned monthly EMIs with 1-tap Paid button, member attribution, and tenure progress.
+- [`lib/widgets/family_pool_transfers_card.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/widgets/family_pool_transfers_card.dart): ₹12,500 monthly equal-share breakdown and inter-member transfer history (`Family_Transfers`).
 - [`lib/widgets/family_loan_emi_card.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/widgets/family_loan_emi_card.dart): Modern loan and EMI tracker widget displaying installment count progress bars, monthly payment amounts, principal paid, interest paid, and balance to be paid for both Home Loan and active consumer EMIs.
 - [`lib/screens/loans_emi_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/loans_emi_screen.dart): Dedicated loans dashboard displaying active liabilities and monthly obligations.
 - [`lib/screens/home_loan_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/home_loan_screen.dart): Dedicated Home Loan tracking with principal paid vs. outstanding metrics.
@@ -83,3 +87,21 @@ The Loans and EMI Tracker gives families complete visibility into outstanding li
   1. Double check all interest rate formulas for annual vs. monthly rate conversion.
   2. Verify that prepayments decrement the balance properly in both the Home Loan ledger and summary views.
   3. Ensure numeric fields parse correctly (strip commas `₹` and whitespace before parsing floats).
+
+
+---
+
+## 6. Admin Loan/Home Loan Configuration & Mandatory Before-10th Tracking
+
+- **Extended Schemas (`Manikutti/src/lib/googleSheets.ts`)**:
+  - **`Loans!A:N`**: Added columns `Interest Rate`, `Start Date`, `Balance Remaining`, `Tenure Months`, `Paid Months`, `Payer Name` (default `Ajesh`), `Share Recipient` (default `Nisha`). Backward-compatible fallback for older `A:G` rows.
+  - **`HomeLoan_Config!A:K`**: Stores Family-level Home Loan baseline (`Family Code`, `Principal Amount`, `Interest Rate`, `Start Date`, `Balance Remaining`, `Monthly EMI`, `Due Day`, `Payer Name`, `Share Recipient`, `Updated At`, `Updated By`).
+  - **`EMI_Monthly_Tracking!A:K`**: Monthly settlement ledger keyed by `Month Key` (`YYYY-MM`) + `Loan Key`, tracking `Paid To Payer`, `Shared With Recipient`, `Auto SMS Detected`, `Confirmed By`, `Updated At`, `Notes`.
+- **API Endpoints**:
+  - `GET /api/sheets/loans?familyCode=...&monthKey=YYYY-MM`: Returns `loans` (`A:N`), `homeLoanConfig`, and `monthlyTracking` for the given month.
+  - `POST /api/sheets/loans` (`action: 'confirmMonthlyTracking'`): Upserts `EMI_Monthly_Tracking`; when paid is confirmed, automatically appends an `EMI` entry into `Family_Expenses` and marks matching `Monthly_Expenses` bills paid.
+  - `POST /api/sheets/home-loan` (`action: 'saveConfig'`): Admin-only save of `HomeLoan_Config` plus optional `HomeLoan_Ledger` baseline snapshot.
+  - `GET /api/sheets/admin/stats`: Includes `homeLoanConfig`, `emiMonthlyTracking`, and extended `Loans` fields.
+- **Web Admin & Mobile UI**:
+  - Web `LedgerTab`, `AdminDialogs`, `useAdminDashboard`, and `AdminDashboard` allow configuring Home Loan & individual Loans with interest rate, start date (e.g., from January), tenure/paid months, remaining balance (including `Auto-Calc` helper and 1-click presets for active Bajaj Finance repayment schedules), payer, and share recipient.
+  - Mobile `EmiReminderService`, `DashboardScreen`, and `FamilyLoanEmiSection` show configurable loan metadata and mandatory before-10th prompts (*"Have you paid the EMI to [payerName]?"* and *"Have you shared the amount to [shareRecipient]?"*). Debit SMS whose extracted amount matches any configured EMI repayment amount (`±₹1`) are auto-logged without confirmation (`SmsParserHelper.autoLogIfExactEmi`), suppressing the paid-EMI prompt automatically while keeping pending share checks visible.
