@@ -49,6 +49,8 @@ The Loans and EMI Tracker gives families complete visibility into outstanding li
      - Standalone recurring EMI commitments registered in `Monthly_Expenses` whose category is `EMI` or whose title includes `emi` or `loan`, automatically deduplicated against active loans by name to prevent double-counting.
    - **Independent Fault-Tolerant Dashboard Fetching**:
      - `/api/sheets/monthly/route.ts` reads `Monthly_Expenses!A:J`.
+     - `/api/sheets/home-loan/route.ts` normalizes `familyCode` matching (trimmed, case-insensitive) and sanitizes formatted currency/comma strings (`parseLoanAmount`) while preserving exact 1-based sheet row IDs for `PUT`/`DELETE`.
+     - `GoogleSheetsService.ensureSheetsExist()` (`Manikutti/src/lib/googleSheets.ts`) caches verified spreadsheets for 5 minutes and deduplicates concurrent in-flight verification requests so simultaneous mobile/dashboard calls do not spam `spreadsheets.get` or hit Google Sheets `429` read-quota errors.
      - Mobile `DashboardScreen._fetchFamilyDuesAndNotifications()` fetches `fetchMonthlyExpenses`, `fetchNotifications`, `fetchLoansData`, `fetchEmiBills`, and `fetchHomeLoanHistory` in independent `try/catch` blocks so a partial failure never prevents Home Loan or Loans/EMI cards from rendering.
    - **Role Feature Gating**: `FamilyLoanEmiSection` hides the Home Loan card or EMI cards individually based on `FeatureKeys.homeLoan` and `FeatureKeys.loansEmiLedger`.
    - **Dashboard Integration**:

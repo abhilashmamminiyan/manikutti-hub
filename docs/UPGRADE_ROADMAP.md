@@ -22,6 +22,7 @@ flowchart TD
     C --> C1["Predictive Cashflow & Budget Caps"]
     C --> C2["Proactive Anomaly Alerts (✅ FCM Push Infrastructure Completed)"]
     C --> C3["Conversational Financial Assistant Chat"]
+    C --> C4["Live Error Telemetry & Firebase Crashlytics (⏳ Pending Sprint)"]
 
     D --> D1["Splitwise-Style Group Expense Settlements"]
     D --> D2["Net Worth & Investments (Gold, FD, Mutual Funds)"]
@@ -128,6 +129,24 @@ flowchart TD
 - **AI Implementation Guide**:
   1. Query `GoogleSheetsService` for date range.
   2. Generate styled PDF with summary graphs and categorized ledger table.
+
+---
+
+### 8. 📊 Live Error, API Failure Telemetry & Firebase Crashlytics (Free Spark Plan) — ⏳ Pending Sprint
+- **Description**: Real-time visibility into mobile screen crashes, non-fatal Flutter exceptions, and backend/Google Sheets API failures without needing paid monitoring tools. Combines an in-house Firestore telemetry pipeline viewed live in the Web Admin Console with native Firebase Crashlytics symbolicated crash reporting.
+- **Proposed Architecture (Option 2: Firestore `error_logs` + Admin Diagnostics Tab + Option 1/3 Crashlytics)**:
+  1. **Firestore `error_logs` Collection (Free Spark Tier: 20k writes/day, 50k reads/day)**:
+     - Standard document schema: `{ timestamp, source ("mobile" | "web-api"), severity ("fatal" | "error" | "warn"), screenOrRoute, httpStatus, message, stackTraceSnippet, userEmail, appVersion, deviceInfo }`.
+     - Automated 14-day TTL policy (or bounded batch cleanup) to stay comfortably within Firestore 1 GiB free storage.
+  2. **Mobile (`manikutti_mobile`) Telemetry Hooks**:
+     - Global Flutter error boundaries (`FlutterError.onError`, `PlatformDispatcher.instance.onError`) plus an API interceptor in `ApiService` for non-2xx responses (e.g., `/api/sheets/home-loan` timeouts/`500`s/`429`s).
+     - Silent batched POST to `/api/telemetry/errors` (or offline SQLite queue flushed when online) so telemetry logging never blocks or crashes the UI.
+     - Optional `firebase_crashlytics` + Gradle plugin integration in `android/` (verified for compatibility with AGP `9.0.1` + Gradle `9.3.1`).
+  3. **Web Backend (`Manikutti`) API Logging**:
+     - Lightweight helper called inside API route `catch` blocks (e.g. `home-loan`, `family`, `ai/extract-screenshot`) to persist structured failure context directly to Firestore `error_logs` via `firebase-admin`.
+  4. **Web Admin Console (`/admin` Live Diagnostics Tab)**:
+     - Admin-only endpoint `/api/admin/errors` reading the latest `error_logs` entries filterable by severity, route/screen, and user email.
+     - Live table in `Manikutti/src/app/admin/page.tsx` with stack trace preview and a **"Copy AI Debug Report"** button so errors can be pasted directly into an AI debugging session.
 
 ---
 
