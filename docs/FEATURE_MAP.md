@@ -89,3 +89,14 @@ When asked to work on a task, match the prompt against this table and immediatel
 - **About App / Feature Catalog / Screenshot Tutorials / Release Notes ("What's New")** ➡️ [`docs/features/15_app_feature_guide_and_release_notes.md`](file:///d:/MERN/Personal/my-apps/finance-tracker/docs/features/15_app_feature_guide_and_release_notes.md)
 - **Family Goals & Purchase Wishlist / Lakshyam / Gemini Motivation** ➡️ [`docs/features/16_family_goals_lakshyam.md`](file:///d:/MERN/Personal/my-apps/finance-tracker/docs/features/16_family_goals_lakshyam.md)
 - **Future Feature Proposals & Architectural Roadmap** ➡️ [`docs/UPGRADE_ROADMAP.md`](file:///d:/MERN/Personal/my-apps/finance-tracker/docs/UPGRADE_ROADMAP.md)
+
+
+---
+
+## 6. SMS Auto-Detection & Loan/EMI Configuration Additions
+
+| Feature Area | Web (`Manikutti`) | Mobile (`manikutti_mobile`) | Sheets / Local Storage |
+| :--- | :--- | :--- | :--- |
+| **Bank SMS Detection & Widget Prompt** | — | `SmsParserHelper.kt`, `SmsTransactionReceiver.kt`, `SmsWidgetActionReceiver.kt`, `ManikuttiHomeWidgetProvider.kt`, `SmsDetectionService`, `DashboardScreen`, `NotificationSettingsScreen` | `pending_sms_queue` (`HomeWidgetPreferences`), `manikutti.db` (`transactions`), `Personal_Expenses` |
+| **Family EMI-Only Guard** | `src/app/api/sheets/expense/route.ts` (`isAllowedFamilyPaymentCategory`), `AddRecordModal.tsx`, `src/app/api/ai/voice-expense/route.ts` | `AddTransactionScreen`, `ShareExpenseSheet`, `VoiceExpenseService` | `Family_Expenses` |
+| **Loan/Home Loan Config & Mandatory Check** | `googleSheets.ts`, `api/sheets/loans/route.ts`, `api/sheets/home-loan/route.ts`, `api/sheets/admin/stats/route.ts`, `LedgerTab.tsx`, `AdminDialogs.tsx`, `useAdminDashboard.ts` | `EmiReminderService`, `Loan` / `HomeLoanConfig` / `EmiMonthlyTracking` models, `FamilyLoanEmiSection`, `DashboardScreen`, `NotificationService` | `Loans!A:N`, `HomeLoan_Config!A:K`, `EMI_Monthly_Tracking!A:K` |

@@ -88,3 +88,11 @@ docs/
 - When creating features, follow the project Git rule in `.agents/AGENTS.md`:
   - Always work on a separate branch (e.g. `feature/<name>` or `fix/<name>`).
   - Always pull latest changes before pushing.
+
+
+---
+
+## 🧭 Recent Architectural Extensions (`feature/sms-expense-and-emi-config`)
+- **Native SMS Expense Bridge**: `SmsTransactionReceiver` + `SmsParserHelper` + `SmsWidgetActionReceiver` parse Indian bank/UPI SMS offline and write confirmed entries into SQLite `manikutti.db` (`synced = 0`) with UTC timestamps and `Personal_Expenses` target, plus verified bank balance synchronization.
+- **Family Ledger Contract**: `Family_Expenses` accepts `EMI` and `Home Loan` payments only (`isAllowedFamilyPaymentCategory` on Web API; manual/share/voice Family entry disabled).
+- **Configured Loans & Monthly Tracking**: `Loans!A:N`, `HomeLoan_Config!A:K`, and `EMI_Monthly_Tracking!A:K` store interest rate, start date, remaining balance, tenure/paid months, and payer/share recipients (`Ajesh`/`Nisha` defaults) with mandatory before-10th monthly checks and EMI SMS auto-suppression.

@@ -83,3 +83,14 @@ Timely notifications keep family members informed about critical financial miles
 - When modifying notifications:
   1. The entry point `callbackDispatcher` in `main.dart` MUST have `@pragma('vm:entry-point')` to prevent the Dart compiler from stripping it in release AOT builds.
   2. Always verify that notification channel IDs remain consistent to avoid duplicate channels in Android settings.
+
+
+---
+
+## 6. SMS Expense Detection & Mandatory EMI Alert Channels (Added)
+
+- **New Android Notification Channels (`NotificationChannelHelper.kt`, `notification_service.dart`)**:
+  - `sms_expense_channel` (`Bank SMS Transactions`, High Importance): Interactive notifications asking `"Transaction detected — want to log?"` with **Yes, Log** and **Dismiss** PendingIntent actions handled by `SmsWidgetActionReceiver`.
+  - `emi_mandatory_channel` (`Mandatory Monthly EMI & Share Alerts`, High Importance): Day-before-10th reminders (`NotificationService.scheduleMonthlyReminder` with custom `channelId`, `channelName`, `payload: 'emi_mandatory'`) scheduled by `EmiReminderService` and cancelled/updated automatically when paid or SMS-detected.
+- **Settings UI (`manikutti_mobile/lib/screens/notification_settings_screen.dart`)**:
+  - Added **Bank SMS Expense Detection** toggle (`sms_detection_enabled`), Android `RECEIVE_SMS` / `READ_SMS` permission request button, and manual **Scan Recent Bank SMS** trigger.

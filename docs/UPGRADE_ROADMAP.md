@@ -160,3 +160,11 @@ When an AI assistant is asked to implement any upgrade from this roadmap:
 4. **Offline Mobile Logic**: If the mobile app is affected, update SQLite schema, `TransactionModel`/new model, `ApiService`, and `SyncService`.
 5. **UI & Localization**: Add text keys to both `lib/l10n/app_en.arb` and `lib/l10n/app_ml.arb`, then run `flutter gen-l10n`.
 6. **Documentation Sync**: Update [`FEATURE_MAP.md`](FEATURE_MAP.md) and the corresponding feature document in `docs/features/`.
+
+
+---
+
+## Completed Roadmap Updates
+
+- **[COMPLETED] 1. SMS Notification Auto-Capture & Parsing (`feature/sms-expense-and-emi-config`)**:
+  - Implemented native Android `SmsTransactionReceiver`, `SmsParserHelper`, `SmsWidgetActionReceiver`, `com.abhilash.manikutti/sms` MethodChannel, actionable notifications (`sms_expense_channel`), Home Screen Widget **Yes/No** prompt (`widget_sms_prompt_layout`), Personal sheet SQLite offline insert + `BankBalanceService` available-balance sync, and automatic EMI SMS confirmation.

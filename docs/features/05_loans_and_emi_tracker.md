@@ -87,3 +87,21 @@ The Loans and EMI Tracker gives families complete visibility into outstanding li
   1. Double check all interest rate formulas for annual vs. monthly rate conversion.
   2. Verify that prepayments decrement the balance properly in both the Home Loan ledger and summary views.
   3. Ensure numeric fields parse correctly (strip commas `₹` and whitespace before parsing floats).
+
+
+---
+
+## 6. Admin Loan/Home Loan Configuration & Mandatory Before-10th Tracking
+
+- **Extended Schemas (`Manikutti/src/lib/googleSheets.ts`)**:
+  - **`Loans!A:N`**: Added columns `Interest Rate`, `Start Date`, `Balance Remaining`, `Tenure Months`, `Paid Months`, `Payer Name` (default `Ajesh`), `Share Recipient` (default `Nisha`). Backward-compatible fallback for older `A:G` rows.
+  - **`HomeLoan_Config!A:K`**: Stores Family-level Home Loan baseline (`Family Code`, `Principal Amount`, `Interest Rate`, `Start Date`, `Balance Remaining`, `Monthly EMI`, `Due Day`, `Payer Name`, `Share Recipient`, `Updated At`, `Updated By`).
+  - **`EMI_Monthly_Tracking!A:K`**: Monthly settlement ledger keyed by `Month Key` (`YYYY-MM`) + `Loan Key`, tracking `Paid To Payer`, `Shared With Recipient`, `Auto SMS Detected`, `Confirmed By`, `Updated At`, `Notes`.
+- **API Endpoints**:
+  - `GET /api/sheets/loans?familyCode=...&monthKey=YYYY-MM`: Returns `loans` (`A:N`), `homeLoanConfig`, and `monthlyTracking` for the given month.
+  - `POST /api/sheets/loans` (`action: 'confirmMonthlyTracking'`): Upserts `EMI_Monthly_Tracking`; when paid is confirmed, automatically appends an `EMI` entry into `Family_Expenses` and marks matching `Monthly_Expenses` bills paid.
+  - `POST /api/sheets/home-loan` (`action: 'saveConfig'`): Admin-only save of `HomeLoan_Config` plus optional `HomeLoan_Ledger` baseline snapshot.
+  - `GET /api/sheets/admin/stats`: Includes `homeLoanConfig`, `emiMonthlyTracking`, and extended `Loans` fields.
+- **Web Admin & Mobile UI**:
+  - Web `LedgerTab`, `AdminDialogs`, `useAdminDashboard`, and `AdminDashboard` allow configuring Home Loan & individual Loans with interest rate, start date (e.g., from January), tenure/paid months, remaining balance (including `Auto-Calc` helper and 1-click presets for active Bajaj Finance repayment schedules), payer, and share recipient.
+  - Mobile `EmiReminderService`, `DashboardScreen`, and `FamilyLoanEmiSection` show configurable loan metadata and mandatory before-10th prompts (*"Have you paid the EMI to [payerName]?"* and *"Have you shared the amount to [shareRecipient]?"*). Debit SMS whose extracted amount matches any configured EMI repayment amount (`±₹1`) are auto-logged without confirmation (`SmsParserHelper.autoLogIfExactEmi`), suppressing the paid-EMI prompt automatically while keeping pending share checks visible.

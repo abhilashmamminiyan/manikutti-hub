@@ -103,3 +103,16 @@ Family Shared Finance allows members of a household to pool and track collective
   1. Never bypass `checkMembership()` in `Manikutti/src/lib/googleSheets.ts`.
   2. Always ensure the `addedBy` column stores the authenticated user's email, not client-supplied arbitrary text.
   3. Ensure `Family_Expenses` columns in `ensureSheetsExist` match the read ranges in `/api/sheets/family/route.ts`.
+
+
+---
+
+## 7. Family Payment Restriction Contract (EMI & Home Loan Only)
+
+- **Policy**: Manual/ad-hoc Family expenses are disabled across Mobile and Web so `Family_Expenses` strictly tracks **EMI & Home Loan** commitments.
+- **API Enforcement (`Manikutti/src/app/api/sheets/expense/route.ts`)**:
+  - `POST` requests targeting `Family_Expenses` validate categories via `isAllowedFamilyPaymentCategory()` (`EMI`, `Home Loan`, `Home Loan EMI`, `Loan Repayment`, `Loan`, `Mortgage`) and reject non-EMI/Home Loan entries with `403`.
+- **UI & Voice Enforcement**:
+  - Mobile `AddTransactionScreen` hides the `Family` ledger toggle button; `ShareExpenseSheet` limits targets to `Personal` and `Home Loan`.
+  - Mobile `VoiceExpenseService` and Web `/api/ai/voice-expense` no longer auto-route spoken expenses into `Family`.
+  - Web `AddRecordModal` blocks ad-hoc record creation when `pathname === '/family'`.
