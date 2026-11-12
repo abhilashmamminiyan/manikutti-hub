@@ -26,12 +26,19 @@ Timely notifications keep family members informed about critical financial miles
 - [`lib/main.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/main.dart):
   - Initializes Firebase (`Firebase.initializeApp()`), registers `FirebaseMessaging.onBackgroundMessage`, initializes `FeatureFlagService`, and runs Workmanager background execution callback (`@pragma('vm:entry-point') callbackDispatcher`) as an offline-resilient polling backup.
 - [`lib/services/api_service.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/services/api_service.dart):
+  - `_TelemetryHttpClient`: Intercepts HTTP >= 400 and network exceptions across all API routes (including `/api/sheets/home-loan`) -> logs to Firebase Crashlytics + `/api/telemetry/errors`.
   - `registerFcmToken(token)`: Persists device FCM token to Firestore via backend.
   - `fetchNotifications(familyCode)`: Retrieves latest family alerts.
+- [`lib/services/crash_reporting_service.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/services/crash_reporting_service.dart):
+  - Configures `firebase_crashlytics` (`FlutterError.onError`, `PlatformDispatcher.instance.onError`, `CrashlyticsRouteObserver`) and buffers structured error telemetry offline in `SharedPreferences` until flushed to `/api/telemetry/errors`.
+- [`android/app/proguard-rules.pro`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/android/app/proguard-rules.pro):
+  - Retains `ComponentRegistrar` zero-arg constructors (`firebase-components:18.0.0` compatibility with AGP 9 R8 full mode), `com.it_nomads.fluttersecurestorage.**`, ML Kit classes, and Crashlytics `SourceFile,LineNumberTable` attributes.
 
 ### Backend API & Firebase (`Manikutti`)
 - [`src/lib/firebaseAdmin.ts`](file:///d:/MERN/Personal/my-apps/finance-tracker/Manikutti/src/lib/firebaseAdmin.ts):
   - Modular `firebase-admin` v14 initialization (`FIREBASE_SERVICE_ACCOUNT`) providing Cloud Firestore & FCM `sendFcmToUsers()` multicast helper with automatic stale token pruning.
+- [`src/lib/errorTelemetry.ts`](file:///d:/MERN/Personal/my-apps/finance-tracker/Manikutti/src/lib/errorTelemetry.ts) & [`src/app/api/telemetry/errors/route.ts`](file:///d:/MERN/Personal/my-apps/finance-tracker/Manikutti/src/app/api/telemetry/errors/route.ts):
+  - Persists mobile & web API failure telemetry to the `Error_Logs` sheet in `ADMIN_SPREADSHEET_ID` and serves filtered logs to Admin UI (`DiagnosticsTab.tsx`) and AI CLI (`scripts/read_crashes.mjs`).
 - [`src/app/api/notifications/register-token/route.ts`](file:///d:/MERN/Personal/my-apps/finance-tracker/Manikutti/src/app/api/notifications/register-token/route.ts):
   - Authenticated `POST` saving device FCM token to Firestore `users/{email}.fcmTokens`.
 - `/api/sheets/notifications/route.ts`:
