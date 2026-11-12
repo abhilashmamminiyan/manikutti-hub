@@ -47,9 +47,10 @@ The Loans and EMI Tracker gives families complete visibility into outstanding li
    - The system computes the family's fixed, non-negotiable monthly EMI obligations by combining:
      - All active loans from `Loans` (`status: Active`) summing `monthlyEMI`.
      - Standalone recurring EMI commitments registered in `Monthly_Expenses` whose category is `EMI` or whose title includes `emi` or `loan`, automatically deduplicated against active loans by name to prevent double-counting.
-   - **Independent Fault-Tolerant Dashboard Fetching**:
+   - **Independent Fault-Tolerant Dashboard Fetching & Home Loan Ledger Safety**:
      - `/api/sheets/monthly/route.ts` reads `Monthly_Expenses!A:J`.
-     - `/api/sheets/home-loan/route.ts` normalizes `familyCode` matching (trimmed, case-insensitive) and sanitizes formatted currency/comma strings (`parseLoanAmount`) while preserving exact 1-based sheet row IDs for `PUT`/`DELETE`.
+     - `/api/sheets/home-loan/route.ts` normalizes `familyCode` matching (trimmed, case-insensitive) and sanitizes formatted currency/comma strings (`parseLoanAmount`). It detects whether Row 1 is a header (`Date`) before slicing so data rows are never silently skipped if a header is missing, assigns exact 0-based sheet row indices (`id`), guards header rows from mutation, and maps `DELETE` (`id + 1`, with optional `date` match check) to `GoogleSheetsService.deleteRow()`'s 1-based A1 row contract.
+     - `HomeLoanCalculator` (`manikutti_mobile/lib/utils/home_loan_calculator.dart`) & Web `home-loan/page.tsx` dynamically recalculate Interest, Principal, and Remaining Balance whenever the selected repayment Date, Loan Interest Rate (%), or Total EMI changes using daily reducing-balance interest against the prior ledger entry.
      - `GoogleSheetsService.ensureSheetsExist()` (`Manikutti/src/lib/googleSheets.ts`) caches verified spreadsheets for 5 minutes and deduplicates concurrent in-flight verification requests so simultaneous mobile/dashboard calls do not spam `spreadsheets.get` or hit Google Sheets `429` read-quota errors.
      - Mobile `DashboardScreen._fetchFamilyDuesAndNotifications()` fetches `fetchMonthlyExpenses`, `fetchNotifications`, `fetchLoansData`, `fetchEmiBills`, and `fetchHomeLoanHistory` in independent `try/catch` blocks so a partial failure never prevents Home Loan or Loans/EMI cards from rendering.
    - **Role Feature Gating**: `FamilyLoanEmiSection` hides the Home Loan card or EMI cards individually based on `FeatureKeys.homeLoan` and `FeatureKeys.loansEmiLedger`.
