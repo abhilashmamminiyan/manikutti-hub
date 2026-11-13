@@ -62,6 +62,13 @@ The Manikutti ecosystem is designed to be deeply accessible to Malayalam-speakin
    - On confirmation, the preference is saved to `SharedPreferences` (`theme_style`: `'paper'` or `'modern'`), and `MyApp.restartApp(context)` tears down and rebuilds the root app state.
    - `MaterialApp` injects `paperLightTheme` / `paperDarkTheme` with `PaperMorphPageTransitionsBuilder` on every route transition.
 
+6. **Dynamic Theme Accent / Primary Color & Custom Color Picker**:
+   - Instead of a fixed static green/teal theme, users can personalize their app accent color directly in `SettingsScreen`.
+   - Preset Palette: Signature Deep Teal (`#006972`), Fresh Mint Teal (`#0D9488`), Deep Royal Indigo (`#1E40AF`), Sky Blue (`#0284C7`), Emerald Green (`#16A34A`), Warm Amber (`#D97706`), Crimson Rose (`#BE123C`), Royal Purple (`#7C3AED`), Ruby Red (`#E11D48`), Slate (`#475569`).
+   - Custom Color Picker Dialog ([`lib/widgets/color_picker_dialog.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/widgets/color_picker_dialog.dart)): Supports custom Hex input (`#RRGGBB`), RGB sliders (0-255), and live interactive preview cards.
+   - Dynamic Theme Builders: `AppTheme.buildLightTheme(primaryColor)` and `AppTheme.buildDarkTheme(primaryColor)` recalculate `ColorScheme`, `primaryContainer`, and `onPrimaryContainer` with HSL lightness and saturation offsets.
+   - Persistence & Live Reactivity: Stored in `SharedPreferences` under `theme_primary_color` (`0xAARRGGBB` integer), loaded on app launch, and instantly reacts across all widgets via `MyApp.setPrimaryColor(BuildContext, Color)`.
+
 ---
 
 ## 4. Edge Cases & Malayalam Typography
