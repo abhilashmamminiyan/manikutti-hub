@@ -99,9 +99,18 @@ The Loans and EMI Tracker gives families complete visibility into outstanding li
   - **`EMI_Monthly_Tracking!A:K`**: Monthly settlement ledger keyed by `Month Key` (`YYYY-MM`) + `Loan Key`, tracking `Paid To Payer`, `Shared With Recipient`, `Auto SMS Detected`, `Confirmed By`, `Updated At`, `Notes`.
 - **API Endpoints**:
   - `GET /api/sheets/loans?familyCode=...&monthKey=YYYY-MM`: Returns `loans` (`A:N`), `homeLoanConfig`, and `monthlyTracking` for the given month.
-  - `POST /api/sheets/loans` (`action: 'confirmMonthlyTracking'`): Upserts `EMI_Monthly_Tracking`; when paid is confirmed, automatically appends an `EMI` entry into `Family_Expenses` and marks matching `Monthly_Expenses` bills paid.
+  - `POST /api/sheets/loans` (`action: 'confirmMonthlyTracking'`): Upserts `EMI_Monthly_Tracking`; when paid is confirmed, automatically appends an `EMI` entry into `Family_Expenses`, marks matching `Monthly_Expenses` bills paid, appends to `Notifications` sheet, and dispatches FCM push notifications to Mom (`Nisha`) and Abhilash with format: `"[Payer] paid loan \"[Loan-Name]\" amount \"₹[Amount]\" at \"[Date]\""`.
   - `POST /api/sheets/home-loan` (`action: 'saveConfig'`): Admin-only save of `HomeLoan_Config` plus optional `HomeLoan_Ledger` baseline snapshot.
   - `GET /api/sheets/admin/stats`: Includes `homeLoanConfig`, `emiMonthlyTracking`, and extended `Loans` fields.
 - **Web Admin & Mobile UI**:
   - Web `LedgerTab`, `AdminDialogs`, `useAdminDashboard`, and `AdminDashboard` allow configuring Home Loan & individual Loans with interest rate, start date (e.g., from January), tenure/paid months, remaining balance (including `Auto-Calc` helper and 1-click presets for active Bajaj Finance repayment schedules), payer, and share recipient.
-  - Mobile `EmiReminderService`, `DashboardScreen`, and `FamilyLoanEmiSection` show configurable loan metadata and mandatory before-10th prompts (*"Have you paid the EMI to [payerName]?"* and *"Have you shared the amount to [shareRecipient]?"*). Debit SMS whose extracted amount matches any configured EMI repayment amount (`±₹1`) are auto-logged without confirmation (`SmsParserHelper.autoLogIfExactEmi`), suppressing the paid-EMI prompt automatically while keeping pending share checks visible.
+  - Repayment Schedule Engines ([`repayment_schedules_data.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/data/repayment_schedules_data.dart) & [`repaymentSchedulesData.ts`](file:///d:/MERN/Personal/my-apps/finance-tracker/Manikutti/src/data/repaymentSchedulesData.ts)): Ingested complete amortization schedules directly from authentic documents:
+    1. **Bajaj Personal Loan (`P595PRB70267501`)**: ₹2,15,378 @ 30.00% p.a., 48 months tenure, monthly EMI ₹7,755, Customer: Nisha P, Payer: Ajesh.
+    2. **Bajaj Lifestyle 0% (`P595PSC90568277`)**: ₹28,369 @ 0.00% p.a., 8 months tenure, monthly EMI ₹3,546, Customer: Nisha P, Payer: Ajesh.
+    3. **Bajaj Lifestyle 23.58% (`P595PSC89289290`)**: ₹78,000 @ 23.58% p.a., 18 months tenure, monthly EMI ₹4,834 (initial ₹4,411), Customer: Nisha P, Payer: Ajesh.
+    - Provides real-time calculation of Remaining Principal, Paid Principal, Remaining Interest, Paid Interest, and Interest Rates.
+  - **Demo Role Experience ([`demo_role_home_screen.dart`](file:///d:/MERN/Personal/my-apps/finance-tracker/manikutti_mobile/lib/screens/demo_role_home_screen.dart))**: Dedicated screen for Mother and Brother with role `Demo`. Contains only:
+    1. **SMS Expense Tracking**: Real-time bank SMS monitoring and pending queue actions.
+    2. **Zero-Confirmation EMI Auto-Log**: If Ajesh receives an EMI debit SMS, the app automatically confirms the payment without prompting, updates the ledger, and alerts Mom & Abhilash.
+    3. **Fallback 1-Tap Manual Payment**: If the bank SMS fails or is delayed, allows Mother or Brother to mark the assigned loan as paid with 1 tap.
+    4. **Repayment Schedule Tracking**: Interactive breakdown and month-by-month installment sheet viewer.
