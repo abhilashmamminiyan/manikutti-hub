@@ -49,7 +49,16 @@ function Write-ErrorMsg {
     Write-Host "[ERROR] $Message" -ForegroundColor Red
 }
 
-# Auto-resolve GH_TOKEN from Git Credential Manager if not already set
+# Auto-resolve GH_TOKEN from repository-scoped .gh configuration or Git Credential Manager
+$WorkspaceRoot = "d:\MERN\Personal\my-apps\finance-tracker"
+if (Test-Path "$WorkspaceRoot\.gh\hosts.yml") {
+    $hostsContent = Get-Content "$WorkspaceRoot\.gh\hosts.yml" -Raw
+    if ($hostsContent -match 'oauth_token:\s*([^\s\r\n]+)') {
+        $env:GH_TOKEN = $Matches[1].Trim()
+        Write-Host "[INFO] Injected repository-scoped GitHub PAT for abhilashmamminiyan from .gh\hosts.yml." -ForegroundColor Gray
+    }
+}
+
 if (-not $env:GH_TOKEN) {
     try {
         $psi = New-Object System.Diagnostics.ProcessStartInfo
